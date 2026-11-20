@@ -19,6 +19,8 @@ create function storage.foldername(name text) returns text[] language sql immuta
 grant execute on function storage.foldername(text) to authenticated;
 -- Supabase grants table privileges on public to API roles by default; RLS is what protects data.
 alter default privileges in schema public grant all on tables to anon, authenticated;
+-- ...and execute on every new function to the API roles, so each migration must revoke what visitors may not call.
+alter default privileges in schema public grant execute on functions to anon, authenticated;
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'admin@example.com',  '{"full_name":"Gili Admin"}'),
   ('bbbbbbbb-0000-0000-0000-000000000002', 'parent@example.com', '{"full_name":"Dana Parent"}'),
