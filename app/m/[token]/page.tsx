@@ -5,6 +5,7 @@ import { translator } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/format";
 import { fmtDate, fmtTime } from "@/lib/time";
 import { ClientActions } from "./ClientActions";
+import { AddToCalendar } from "@/components/AddToCalendar";
 import { Icon, IconTile } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,8 @@ export default async function ManagePage({ params, searchParams }: { params: Pro
         ? <ClientActions token={token} />
         : <p className="muted small">{t("m.too_late").replace("{hours}", String(b.cancel_hours))}</p>)}
       {!active && b.business.page && <Link className="btn btn-primary" href={`/p/${b.business.slug}`}><Icon n="calendarPlus" />{t("m.book_again")}</Link>}
+      {active && <AddToCalendar icsHref={`/m/${token}/ics`} ev={{ title: `${b.offering.name} · ${b.business.name}`, start: b.starts_at,
+        end: new Date(new Date(b.starts_at).getTime() + (b.offering.minutes ?? 60) * 60000).toISOString(), location: b.location }} />}
       {b.business.whatsapp && <a className="btn btn-secondary" href={whatsappLink(b.business.whatsapp)} target="_blank" rel="noopener noreferrer"><Icon n="chat" />{t("m.contact")}</a>}
       <details className="card">
         <summary className="card-title" style={{ cursor: "pointer" }}><span className="title-in"><Icon n="shield" className="title-icon" />{t("m.data")}</span></summary>

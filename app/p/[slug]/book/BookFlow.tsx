@@ -7,6 +7,7 @@ import { addDays, dayNum, fmtDate, fmtTime, weekday } from "@/lib/time";
 import { publicBook, publicSlots, publicWaitlist, type BookState, type WaitState } from "./actions";
 import { Back, Icon, Title } from "@/components/Icon";
 import type { Addon } from "@/components/PublicPageView";
+import { AddToCalendar } from "@/components/AddToCalendar";
 import { shekels } from "@/lib/format";
 
 const t = translator("he");
@@ -61,6 +62,8 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
           {!!state.done.addons?.length && <span className="meta"><Icon n="plus" size={15} />{state.done.addons.join(", ")}</span>}
           <span className="muted">{name}</span>
         </div>
+        <AddToCalendar ev={{ title: `${state.done.offering} · ${name}`, start: state.done.starts_at,
+          end: new Date(new Date(state.done.starts_at).getTime() + (offering ? minutes || 60 : 60) * 60000).toISOString(), location: state.done.location }} />
         <p className="sub">{t("pubbook.done.body")}</p>
         <Link className="btn btn-secondary" href={`/p/${slug}`}>{t("pubbook.done.back")}</Link>
       </main>

@@ -37,6 +37,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
           <Title n="calendar" style={{ marginBottom: 4 }}>{t("set.schedule")}</Title>
           {row("clock", "calendar/hours", "hours.title", "set.hours.hint", !hours ? <span className="tag tag-warn">!</span> : undefined)}
           {row("calendarOff", "calendar/off", "off.title", "set.off.hint")}
+          {row("link", "calendar-sync", "sync.title", "sync.row.hint")}
         </section>
         <PolicyForm business={biz.id} slug={slug} hours={b?.cancel_hours ?? 12} />
         <section className="card" style={{ gap: 0 }}>
