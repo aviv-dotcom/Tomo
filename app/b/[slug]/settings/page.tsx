@@ -9,9 +9,8 @@ import { Icon, IconTile, Title, type IconName } from "@/components/Icon";
 export const dynamic = "force-dynamic";
 const t = translator("he");
 
-export default async function SettingsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ saved?: string }> }) {
+export default async function SettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { saved } = await searchParams;
   const { sb, biz } = await requireBusiness(slug);
   const [{ data: b }, { data: page }, { data: form }, { count: hours }, { count: offerings }] = await Promise.all([
     sb.from("businesses").select("cancel_hours").eq("id", biz.id).single(),
@@ -33,7 +32,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
     <>
       <main className="page">
         <h1 className="h1">{t("set.title")}</h1>
-        <BusinessForm business={biz.id} name={biz.name} slug={biz.slug} saved={saved === "1"} />
+        <BusinessForm business={biz.id} name={biz.name} slug={biz.slug} />
         <section className="card" style={{ gap: 0 }}>
           <Title n="calendar" style={{ marginBottom: 4 }}>{t("set.schedule")}</Title>
           {row("clock", "calendar/hours", "hours.title", "set.hours.hint", !hours ? <span className="tag tag-warn">!</span> : undefined)}

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { serverSupabase } from "@/lib/supabase/server";
 import { errorKey } from "@/lib/errors";
 import { timeToMin } from "@/lib/time";
+import { savedUrl } from "@/lib/back";
 import type { MessageKey } from "@/lib/i18n/messages";
 
 export type FormState = { error?: MessageKey; ok?: number } | null;
@@ -48,8 +49,8 @@ export async function saveHours(_p: FormState, f: FormData): Promise<FormState> 
     .map((d) => ({ weekday: d, start: timeToMin(str(f, `start-${d}`)), end: timeToMin(str(f, `end-${d}`)) }));
   const { error } = await sb.rpc("set_hours", { p_business: str(f, "business"), p_hours: hours });
   if (error) return { error: errorKey(error.message) };
-  revalidatePath(`/b/${str(f, "slug")}/calendar/hours`);
-  return { ok: Date.now() };
+  revalidatePath(`/b/${str(f, "slug")}`, "layout");
+  redirect(savedUrl(str(f, "slug"), str(f, "back"), "hours", { n: String(hours.length) }));
 }
 
 export async function addToSession(_p: FormState, f: FormData): Promise<FormState> {

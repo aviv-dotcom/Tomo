@@ -14,7 +14,7 @@ export async function updateBusiness(_p: SettingsState, f: FormData): Promise<Se
   const { data, error } = await sb.rpc("update_business", { p_business: str(f, "business"), p_name: str(f, "name"), p_slug: str(f, "slug") });
   if (error) return { error: errorKey(error.message) };
   revalidatePath("/", "layout");
-  if (data !== oldSlug) redirect(`/b/${data}/settings?saved=1`);
+  if (data !== oldSlug) redirect(`/b/${data}/settings?saved=business`);
   return { ok: Date.now() };
 }
 

@@ -46,8 +46,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
     { done: d.counts.offerings > 0, label: "today.setup.offerings", href: "services", icon: "tag" },
     { done: (hoursCount ?? 0) > 0, label: "today.setup.hours", href: "calendar/hours?back=today", icon: "clock" },
     { done: hasPeople, label: "today.setup.people", href: "people?add=1", icon: "userPlus" },
-    { done: published, label: "today.setup.page", href: "site", icon: "globe" },
-    { done: !!formRow?.enabled, label: "today.setup.forms", href: "forms", icon: "clipboard", optional: true },
+    { done: published, label: "today.setup.page", href: "site?back=today", icon: "globe" },
+    { done: !!formRow?.enabled, label: "today.setup.forms", href: "forms?back=today", icon: "clipboard", optional: true },
   ];
   const setupDone = steps.every((x) => x.done || x.optional);
   const inbox = await loadInbox(sb, { id: biz.id, name: d.business.name, slug: d.business.slug, timezone: d.business.timezone });

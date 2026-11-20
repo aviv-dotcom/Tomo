@@ -6,7 +6,7 @@ import { Icon, Title } from "@/components/Icon";
 
 const t = translator("he");
 
-export function BusinessForm({ business, name, slug, saved }: { business: string; name: string; slug: string; saved: boolean }) {
+export function BusinessForm({ business, name, slug }: { business: string; name: string; slug: string }) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(updateBusiness, null);
   const [newSlug, setNewSlug] = useState(slug);
   const changed = newSlug.trim().toLowerCase() !== slug;
@@ -27,7 +27,7 @@ export function BusinessForm({ business, name, slug, saved }: { business: string
             pattern="[a-zA-Z0-9][a-zA-Z0-9\-]+" autoCapitalize="off" autoCorrect="off" spellCheck={false} aria-label={t("set.slug")} /></div></label>
       {changed && <p className="small row" style={{ margin: 0, background: "var(--warn-soft)", padding: 10, borderRadius: 10, alignItems: "start" }}><Icon n="alert" size={16} /><span>{t("set.slug.warn")}</span></p>}
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      {(state?.ok || saved) && !pending && <p className="muted small" role="status"><Icon n="check" size={15} />{t("set.saved")}</p>}
+      {state?.ok && !pending && <p className="muted small" role="status"><Icon n="check" size={15} />{t("set.saved")}</p>}
       <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("set.saving") : t("set.save")}</button>
     </form>
   );

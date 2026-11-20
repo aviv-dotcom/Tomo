@@ -1,6 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { serverSupabase } from "@/lib/supabase/server";
+import { savedUrl } from "@/lib/back";
 import { errorKey } from "@/lib/errors";
 import type { MessageKey } from "@/lib/i18n/messages";
 
@@ -14,6 +16,6 @@ export async function saveSite(_p: SiteState, f: FormData): Promise<SiteState> {
     p_about: s("about"), p_whatsapp: s("whatsapp"), p_address: s("address"),
   });
   if (error) return { error: /whatsapp_check/.test(error.message) ? "err.invalid_phone" : errorKey(error.message) };
-  revalidatePath(`/b/${s("slug")}/site`); revalidatePath(`/b/${s("slug")}`); revalidatePath(`/p/${s("slug")}`);
-  return { ok: Date.now() };
+  revalidatePath(`/b/${s("slug")}`, "layout"); revalidatePath(`/p/${s("slug")}`);
+  redirect(savedUrl(s("slug"), s("back"), "site"));
 }
