@@ -1,19 +1,35 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { translator } from "@/lib/i18n";
+import { serverSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
   const t = translator("he");
   const configured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  if (configured) {
+    const sb = await serverSupabase();
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      const { data } = await sb.rpc("my_businesses");
+      const first = (data as { slug: string }[] | null)?.[0];
+      redirect(first ? `/b/${first.slug}` : "/start");
+    }
+  }
   return (
-    <main style={{ maxWidth: 560, margin: "0 auto", padding: "64px 20px", display: "grid", gap: 16 }}>
-      <h1 style={{ margin: 0, fontSize: 36 }}>{t("app.name")}</h1>
-      <p style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>{t("home.title")}</p>
-      <p style={{ margin: 0, color: "var(--ink-2)", lineHeight: 1.6 }}>{t("home.subtitle")}</p>
-      <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: 16, display: "grid", gap: 6 }}>
-        <span style={{ color: "var(--good)", fontWeight: 600 }}>✓ {t("home.status")}</span>
-        <span style={{ color: configured ? "var(--good)" : "var(--ink-2)" }}>{configured ? "✓ " + t("home.db.ok") : t("home.db.missing")}</span>
+    <main className="page" style={{ paddingTop: 56 }}>
+      <h1 className="h1" style={{ fontSize: 34 }}>{t("app.name")}</h1>
+      <p style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>{t("home.title")}</p>
+      <p className="sub">{t("home.subtitle")}</p>
+      <div className="card">
+        {(["home.point1", "home.point2", "home.point3"] as const).map((k) => (
+          <div key={k} className="step"><span className="dot dot-done">✓</span>{t(k)}</div>
+        ))}
       </div>
+      <Link className="btn btn-primary" href="/login">{t("home.cta")}</Link>
+      <Link className="btn btn-secondary" href="/login">{t("home.login")}</Link>
+      {!configured && <p className="muted">{t("home.db.missing")}</p>}
     </main>
   );
 }
