@@ -2,17 +2,20 @@ import Link from "next/link";
 import { translator } from "@/lib/i18n";
 
 const t = translator("he");
+type Section = "today" | "people" | "calendar";
 
 /** Bottom navigation for the owner. Sections not built yet are shown dimmed so the shape of the app is clear. */
-export function OwnerNav({ slug }: { slug: string }) {
-  const soon = (label: string) => <span className="off" title={t("today.soon")}>{label}</span>;
+export function OwnerNav({ slug, active }: { slug: string; active: Section }) {
+  const link = (s: Section, href: string, label: string) => (
+    <Link className={active === s ? "on" : undefined} href={href} aria-current={active === s ? "page" : undefined}>{label}</Link>
+  );
   return (
     <nav className="nav" aria-label="ניווט ראשי">
-      <Link className="on" href={`/b/${slug}`} aria-current="page">{t("nav.today")}</Link>
-      {soon(t("nav.people"))}
-      {soon(t("nav.calendar"))}
-      {soon(t("nav.money"))}
-      {soon(t("nav.sales"))}
+      {link("today", `/b/${slug}`, t("nav.today"))}
+      {link("people", `/b/${slug}/people`, t("nav.people"))}
+      {link("calendar", `/b/${slug}/calendar`, t("nav.calendar"))}
+      <span className="off" title={t("today.soon")}>{t("nav.money")}</span>
+      <span className="off" title={t("today.soon")}>{t("nav.sales")}</span>
     </nav>
   );
 }

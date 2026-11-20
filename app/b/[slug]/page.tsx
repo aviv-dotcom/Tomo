@@ -3,6 +3,8 @@ import { serverSupabase } from "@/lib/supabase/server";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels } from "@/lib/format";
+import { fmtTime } from "@/lib/time";
+import Link from "next/link";
 import { OwnerNav } from "@/components/OwnerNav";
 import { AddPerson } from "./AddPerson";
 
@@ -28,6 +30,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const { data, error } = await sb.rpc("business_today", { p_business: biz.id });
   if (error || !data) notFound();
   const d = data as Today;
+  const { data: agendaData } = await sb.rpc("day_agenda", { p_business: biz.id, p_date: d.today });
+  const agenda = (agendaData ?? []) as { id: string; starts_at: string; offering: string; capacity: number; booked: number; people: string[] }[];
   const dateLabel = new Date(`${d.today}T12:00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
   const hasPeople = d.counts.active + d.counts.leads > 0;
 
@@ -52,6 +56,18 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
         <section className="card">
           <h2 className="card-title">{t("today.waiting.title")}</h2>
           <p className="muted" style={{ margin: 0 }}>{t("today.waiting.empty")}</p>
+        </section>
+
+        <section className="card" style={{ gap: 0 }}>
+          <h2 className="card-title" style={{ marginBottom: 6 }}>{t("today.agenda.title")}<Link className="small" href={`/b/${d.business.slug}/calendar`}>{t("today.agenda.all")}</Link></h2>
+          {agenda.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("today.agenda.empty")}</p>}
+          {agenda.map((a) => (
+            <Link key={a.id} href={`/b/${d.business.slug}/calendar/s/${a.id}`} className="list-row link-row">
+              <span className="session-time">{fmtTime(a.starts_at, d.business.timezone)}</span>
+              <span className="grow">{a.offering}{a.capacity === 1 && a.people[0] ? ` · ${a.people[0]}` : ""}</span>
+              {a.capacity > 1 && <span className="muted small">{a.booked}/{a.capacity}</span>}
+            </Link>
+          ))}
         </section>
 
         <section className="card">
@@ -92,7 +108,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           ))}
         </section>
       </main>
-      <OwnerNav slug={d.business.slug} />
+      <OwnerNav slug={d.business.slug} active="today" />
     </>
   );
 }
