@@ -96,10 +96,10 @@ export async function removeTimeOff(f: FormData): Promise<void> {
   revalidatePath(`/b/${str(f, "slug")}/calendar/off`);
 }
 
-export async function saveCancelHours(_p: FormState, f: FormData): Promise<FormState> {
+
+export async function stopSeries(_p: FormState, f: FormData): Promise<FormState> {
   const sb = await serverSupabase();
-  const { error } = await sb.rpc("set_cancel_hours", { p_business: str(f, "business"), p_hours: Number(str(f, "hours")) });
+  const { error } = await sb.rpc("stop_class_series", { p_recurrence: str(f, "recurrence"), p_reason: str(f, "reason") || null });
   if (error) return { error: errorKey(error.message) };
-  revalidatePath(`/b/${str(f, "slug")}/calendar/hours`);
-  return { ok: Date.now() };
+  redirect(`/b/${str(f, "slug")}/calendar?d=${str(f, "date")}`);
 }

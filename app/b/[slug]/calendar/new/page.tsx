@@ -12,7 +12,8 @@ export default async function NewAppointmentPage({ params, searchParams }: { par
     sb.from("offerings").select("id, name, minutes").eq("business_id", biz.id).eq("delivery", "appointment").eq("active", true).order("position"),
     sb.rpc("list_people", { p_business: biz.id }),
   ]);
-  return <NewAppointment biz={biz} slug={slug} date={isDate(d) ? d : localDate(biz.timezone)} person={person ?? ""}
+  const today = localDate(biz.timezone);
+  return <NewAppointment biz={biz} slug={slug} today={today} date={isDate(d) && d >= today ? d : today} person={person ?? ""}
     offerings={(offerings ?? []) as { id: string; name: string; minutes: number | null }[]}
     people={((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => p.status !== "left")} />;
 }

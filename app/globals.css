@@ -103,3 +103,37 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .switch:checked { background: var(--good); }
 .switch:checked::after { inset-inline-start: 21px; }
 .switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Polish */
+.hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+html, body { overflow-x: clip; }
+.page > *, .card > * { min-width: 0; }
+.top .h1 { overflow-wrap: anywhere; }
+.top > a, .top > .btn { white-space: nowrap; flex: none; }
+.nav a svg { display: block; }
+.nav a { gap: 3px; flex: 1; max-width: 96px; }
+.adder > summary, .fold > summary, .fold-card > summary { list-style: none; cursor: pointer; }
+.adder > summary::-webkit-details-marker, .fold > summary::-webkit-details-marker, .fold-card > summary::-webkit-details-marker { display: none; }
+.adder[open] > summary .btn { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.fold { flex: 1 1 auto; }
+.fold[open] { flex-basis: 100%; }
+.fold[open] > summary { display: none; }
+.fold > .action { margin-top: 0; }
+.fold-card > summary .chev { transition: transform .15s; }
+.fold-card[open] > summary .chev { transform: rotate(-90deg); }
+.slug-field { display: flex; align-items: center; gap: 2px; }
+.slug-field input { flex: 1; min-width: 0; border: 0; background: transparent; min-height: 44px; outline: none; }
+.slug-field:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.day span { font-size: 10px; }
+select.input { padding-inline-end: 8px; }
+.notfound { min-height: 70vh; justify-content: center; align-items: center; text-align: center; }
+.skeleton { background: linear-gradient(90deg, var(--line) 25%, var(--surface) 50%, var(--line) 75%); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: var(--radius); }
+@keyframes sk { to { background-position: -200% 0; } }
+
+/* Wide screens: the nav becomes a side rail and the content gets more room. */
+@media (min-width: 900px) {
+  .nav { inset-inline: 0 auto; inset-block: 0; flex-direction: column; justify-content: flex-start; gap: 6px; width: 96px; padding: 24px 0; border-top: 0; border-inline-end: 1px solid var(--line); }
+  .nav a { max-width: none; flex: none; min-height: 64px; }
+  body:has(.nav) { padding-inline-start: 96px; }
+  body:has(.nav) .page { max-width: 680px; padding-bottom: 40px; }
+}

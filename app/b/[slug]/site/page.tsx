@@ -14,12 +14,12 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}`} className="muted small">→ {t("back")}</Link>
+        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
         <h1 className="h1">{t("site.title")}</h1>
         <p className="sub">{t("site.subtitle")}</p>
         <SiteForm business={biz.id} slug={slug} page={data ?? { published: false, tagline: null, about: null, whatsapp: null, address: null }} />
       </main>
-      <OwnerNav slug={slug} active="today" />
+      <OwnerNav slug={slug} active="more" />
     </>
   );
 }

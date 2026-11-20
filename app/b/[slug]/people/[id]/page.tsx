@@ -9,7 +9,7 @@ import { PersonForm } from "./PersonForm";
 import { ForgetButton } from "./ForgetButton";
 import { ChargeForm, PaymentForm } from "./MoneyForms";
 import { voidCharge } from "../../money/actions";
-import { shekels } from "@/lib/format";
+import { shekels, whatsappLink } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -33,8 +33,14 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
     <>
       <main className="page">
         <Link href={`/b/${slug}/people`} className="muted small">→ {t("back")}</Link>
-        <div className="top"><h1 className="h1">{p.name}</h1>
-          <Link className="btn btn-primary btn-small" href={`/b/${slug}/calendar/new?person=${p.id}`}>{t("card.book")}</Link></div>
+        <div className="top"><div className="grow"><h1 className="h1">{p.name}</h1>
+          <span className="small"><span className={`tag ${p.status === "active" ? "tag-good" : "tag-warn"}`}>{t(`status.${p.status}` as MessageKey)}</span>
+            {p.phone && <span className="muted input-ltr" dir="ltr" style={{ marginInlineStart: 8 }}>{p.phone}</span>}</span></div></div>
+        <div className="row">
+          <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?person=${p.id}`}>{t("card.book")}</Link>
+          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={whatsappLink(p.phone)} target="_blank" rel="noopener">{t("card.whatsapp")}</a>}
+          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`tel:${p.phone}`}>{t("card.call")}</a>}
+        </div>
         <div className="kpis">
           <div className="kpi"><span className="muted small">{t("card.visits")}</span><b>{p.visits}</b></div>
           <div className="kpi"><span className="muted small">{t("card.noshows")}</span><b>{p.no_shows}</b></div>
@@ -52,8 +58,12 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
         <section className="card" id="money">
           <h2 className="card-title">{t("money.section")}
             <span className={`tag ${money.balance > 0 ? "tag-warn" : "tag-good"}`}>{money.balance > 0 ? `${t("money.balance")} ${shekels(money.balance)}` : money.balance < 0 ? `${t("money.credit")} ${shekels(-money.balance)}` : t("money.clear")}</span></h2>
-          <PaymentForm business={biz.id} slug={slug} person={p.id} suggested={money.balance} />
-          <ChargeForm business={biz.id} slug={slug} person={p.id} />
+          <div className="row" style={{ alignItems: "start", flexWrap: "wrap" }}>
+            <details className="fold" open={money.balance > 0}><summary className="btn btn-secondary btn-small">{t("money.pay.title")}</summary>
+              <PaymentForm business={biz.id} slug={slug} person={p.id} suggested={money.balance} /></details>
+            <details className="fold"><summary className="btn btn-secondary btn-small">{t("money.charge.title")}</summary>
+              <ChargeForm business={biz.id} slug={slug} person={p.id} /></details>
+          </div>
           {money.lines.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("money.lines.empty")}</p>}
           <div>
             {money.lines.map((l) => (

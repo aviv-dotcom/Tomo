@@ -19,5 +19,6 @@ export async function addPerson(_prev: AddPersonState, form: FormData): Promise<
   });
   if (error) return { error: errorKey(error.message) };
   revalidatePath(`/b/${slug}`);
+  revalidatePath(`/b/${slug}/people`);
   return { ok: Date.now() };
 }

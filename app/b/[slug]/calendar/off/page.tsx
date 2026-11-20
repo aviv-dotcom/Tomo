@@ -26,7 +26,7 @@ export default async function TimeOffPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/calendar`} className="muted small">→ {t("back")}</Link>
+        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
         <h1 className="h1">{t("off.title")}</h1>
         <p className="sub">{t("off.subtitle")}</p>
         <TimeOffForm business={biz.id} slug={slug} today={localDate(tz)} />
@@ -48,7 +48,7 @@ export default async function TimeOffPage({ params }: { params: Promise<{ slug: 
           </section>
         ))}
       </main>
-      <OwnerNav slug={slug} active="calendar" />
+      <OwnerNav slug={slug} active="more" />
     </>
   );
 }

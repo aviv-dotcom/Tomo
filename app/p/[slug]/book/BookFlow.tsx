@@ -74,7 +74,7 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
         <input type="hidden" name="slug" value={slug} />
         {offering && <><input type="hidden" name="offering" value={offering.id} /><input type="hidden" name="slot" value={slot} /></>}
         {session && <input type="hidden" name="session" value={session.id} />}
-        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: -9999, width: 1, height: 1 }} />
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hp" />
         <label className="field"><span className="label">{t("pubbook.name")}</span><input className="input" name="name" required minLength={2} maxLength={80} autoComplete="name" /></label>
         <label className="field"><span className="label">{t("pubbook.phone")}</span><input className="input input-ltr" name="phone" type="tel" required inputMode="tel" autoComplete="tel" /></label>
         <label className="field"><span className="label">{t("pubbook.email")}</span><input className="input input-ltr" name="email" type="email" autoComplete="email" /></label>

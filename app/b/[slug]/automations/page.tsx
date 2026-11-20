@@ -14,12 +14,12 @@ export default async function AutomationsPage({ params }: { params: Promise<{ sl
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/inbox`} className="muted small">→ {t("back")}</Link>
+        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
         <h1 className="h1">{t("auto.title")}</h1>
         <p className="sub">{t("auto.subtitle")}</p>
         <Toggles business={biz.id} slug={slug} state={(data ?? {}) as Record<string, boolean>} />
       </main>
-      <OwnerNav slug={slug} active="today" />
+      <OwnerNav slug={slug} active="more" />
     </>
   );
 }

@@ -8,6 +8,7 @@ import { OwnerNav } from "@/components/OwnerNav";
 import { bookingAction } from "../../actions";
 import { AddToSession } from "./AddToSession";
 import { CancelSession } from "./CancelSession";
+import { StopSeries } from "./StopSeries";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -24,6 +25,8 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
   const tz = biz.timezone;
   const isClass = s.capacity > 1;
   const booked = s.bookings.filter((b) => b.status !== "waitlist").length;
+  const { data: rec } = await sb.from("sessions").select("recurrence_id, recurrences(active)").eq("id", s.id).maybeSingle();
+  const series = (rec as { recurrence_id: string | null; recurrences: { active: boolean } | null } | null);
   const { data: people } = isClass ? await sb.rpc("list_people", { p_business: biz.id }) : { data: [] };
   const taken = new Set(s.bookings.map((b) => b.person_id));
   const candidates = ((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => !taken.has(p.id) && p.status !== "left");
@@ -60,6 +63,9 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
         )}
         {s.status === "scheduled" && new Date(s.starts_at) > new Date() && (
           <CancelSession session={s.id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
+        )}
+        {series?.recurrence_id && series.recurrences?.active && (
+          <StopSeries recurrence={series.recurrence_id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}
       </main>
       <OwnerNav slug={slug} active="calendar" />

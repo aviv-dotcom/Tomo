@@ -16,9 +16,10 @@ export default async function InboxPage({ params }: { params: Promise<{ slug: st
     <>
       <main className="page">
         <Link href={`/b/${slug}`} className="muted small">→ {t("back")}</Link>
-        <div className="top"><h1 className="h1">{t("act.title")}</h1><Link className="small" href={`/b/${slug}/automations`}>{t("act.settings")}</Link></div>
+        <h1 className="h1">{t("act.title")}</h1>
         {items.length === 0 && <p className="muted">{t("act.empty")}</p>}
         {items.map((i) => <ActionCard key={i.action.id} action={i.action} text={i.text} slug={slug} />)}
+        <Link className="small muted" href={`/b/${slug}/automations`}>{t("act.settings")} ‹</Link>
       </main>
       <OwnerNav slug={slug} active="today" />
     </>

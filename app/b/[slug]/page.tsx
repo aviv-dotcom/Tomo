@@ -6,7 +6,6 @@ import { shekels } from "@/lib/format";
 import { fmtTime } from "@/lib/time";
 import Link from "next/link";
 import { OwnerNav } from "@/components/OwnerNav";
-import { AddPerson } from "./AddPerson";
 import { ActionCard } from "@/components/ActionCard";
 import { loadInbox } from "@/lib/inbox";
 
@@ -36,8 +35,20 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const agenda = (agendaData ?? []) as { id: string; starts_at: string; offering: string; capacity: number; booked: number; people: string[] }[];
   const dateLabel = new Date(`${d.today}T12:00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
   const hasPeople = d.counts.active + d.counts.leads > 0;
-  const { data: pageRow } = await sb.from("business_pages").select("published").eq("business_id", biz.id).maybeSingle();
+  const [{ data: pageRow }, { data: formRow }, { count: hoursCount }] = await Promise.all([
+    sb.from("business_pages").select("published").eq("business_id", biz.id).maybeSingle(),
+    sb.from("business_forms").select("enabled").eq("business_id", biz.id).maybeSingle(),
+    sb.from("business_hours").select("weekday", { count: "exact", head: true }).eq("business_id", biz.id),
+  ]);
   const published = !!pageRow?.published;
+  const steps: { done: boolean; label: MessageKey; href: string; optional?: boolean }[] = [
+    { done: d.counts.offerings > 0, label: "today.setup.offerings", href: "services" },
+    { done: (hoursCount ?? 0) > 0, label: "today.setup.hours", href: "calendar/hours" },
+    { done: hasPeople, label: "today.setup.people", href: "people?add=1" },
+    { done: published, label: "today.setup.page", href: "site" },
+    { done: !!formRow?.enabled, label: "today.setup.forms", href: "forms", optional: true },
+  ];
+  const setupDone = steps.every((x) => x.done || x.optional);
   const inbox = await loadInbox(sb, { id: biz.id, name: d.business.name, slug: d.business.slug, timezone: d.business.timezone });
 
   return (
@@ -48,7 +59,6 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
             <h1 className="h1">{d.business.name}</h1>
             <span className="muted">{t("today.hello")} · {dateLabel}</span>
           </div>
-          <form action="/auth/signout" method="post"><button className="link-btn">{t("nav.signout")}</button></form>
         </div>
 
         <div className="kpis">
@@ -80,42 +90,27 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           ))}
         </section>
 
-        <section className="card">
-          <h2 className="card-title">{t("today.setup.title")}</h2>
-          <div className="step"><span className={`dot ${d.counts.offerings ? "dot-done" : ""}`}>{d.counts.offerings ? "✓" : ""}</span>{t("today.setup.offerings")}</div>
-          <div className="step"><span className={`dot ${hasPeople ? "dot-done" : ""}`}>{hasPeople ? "✓" : ""}</span>{t("today.setup.people")}</div>
-          <Link className="step link-row" href={`/b/${d.business.slug}/site`}><span className={`dot ${published ? "dot-done" : ""}`}>{published ? "✓" : ""}</span><span className="grow">{t("today.setup.page")}</span>{!published && <span className="chev">‹</span>}</Link>
-          <Link className="step link-row" href={`/b/${d.business.slug}/forms`}><span className="dot" /><span className="grow">{t("forms.title")}</span><span className="chev">‹</span></Link>
-          <div className="step"><span className="dot" /><span className="grow">{t("today.setup.pay")}</span><span className="tag">{t("today.soon")}</span></div>
-        </section>
+        {!setupDone && (
+          <section className="card" style={{ gap: 0 }}>
+            <h2 className="card-title" style={{ marginBottom: 4 }}>{t("today.setup.title")}<span className="muted small">{steps.filter((x) => x.done).length}/{steps.length}</span></h2>
+            {steps.map((x) => (
+              <Link key={x.label} className="step link-row" href={`/b/${d.business.slug}/${x.href}`}>
+                <span className={`dot ${x.done ? "dot-done" : ""}`}>{x.done ? "✓" : ""}</span>
+                <span className="grow" style={x.done ? { color: "var(--ink-2)" } : undefined}>{t(x.label)}</span>
+                {!x.done && <span className="chev">‹</span>}
+              </Link>
+            ))}
+          </section>
+        )}
 
-        <section className="card">
-          <h2 className="card-title">{t("today.people.title")}</h2>
+        <section className="card" style={{ gap: 0 }}>
+          <h2 className="card-title" style={{ marginBottom: 4 }}>{t("today.people.title")}<Link className="small" href={`/b/${d.business.slug}/people`}>{t("people.title")}</Link></h2>
           {d.recent.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("today.people.empty")}</p>}
           {d.recent.map((p) => (
-            <div key={p.id} className="list-row">
+            <Link key={p.id} href={`/b/${d.business.slug}/people/${p.id}`} className="list-row link-row">
               <span className="grow">{p.name}</span>
               <span className={`tag ${p.status === "active" ? "tag-good" : "tag-warn"}`}>{t(`status.${p.status}` as MessageKey)}</span>
-            </div>
-          ))}
-          <AddPerson business={d.business.id} slug={d.business.slug} />
-        </section>
-
-        <section className="card">
-          <h2 className="card-title">{t("today.offerings.title")}<Link className="small" href={`/b/${d.business.slug}/services`}>{t("svc.edit")}</Link></h2>
-          {d.offerings.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("today.offerings.empty")}</p>}
-          {d.offerings.map((o) => (
-            <div key={o.id} className="list-row">
-              <span className="grow">
-                <span>{o.name}</span>
-                <span className="muted small">
-                  {[o.minutes ? `${o.minutes} ${t("minutes")}` : null,
-                    o.depositAgorot ? `${t("deposit")} ${shekels(o.depositAgorot)}` : null,
-                    o.delivery === "addon" ? t("delivery.addon") : null].filter(Boolean).join(" · ")}
-                </span>
-              </span>
-              <span className="price">{shekels(o.priceAgorot)} <span className="muted small">{t(`billing.${o.billing}` as MessageKey)}</span></span>
-            </div>
+            </Link>
           ))}
         </section>
       </main>
