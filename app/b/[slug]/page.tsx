@@ -101,7 +101,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
         </section>
 
         <section className="card">
-          <h2 className="card-title">{t("today.offerings.title")}</h2>
+          <h2 className="card-title">{t("today.offerings.title")}<Link className="small" href={`/b/${d.business.slug}/services`}>{t("svc.edit")}</Link></h2>
           {d.offerings.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("today.offerings.empty")}</p>}
           {d.offerings.map((o) => (
             <div key={o.id} className="list-row">
