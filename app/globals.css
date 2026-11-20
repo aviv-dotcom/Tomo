@@ -1,0 +1,16 @@
+:root {
+  --bg: #F5F4EF;
+  --surface: #FFFFFF;
+  --ink: #16181D;
+  --ink-2: #5B6068;
+  --line: #E4E2DA;
+  --accent: #3346D3;
+  --good: #17633A;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111317; --surface: #1A1D23; --ink: #F1F2F4; --ink-2: #A3A8B1; --line: #2A2E36; --accent: #8A98FF; --good: #6FD39A; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body), system-ui, sans-serif; }
+a { color: var(--accent); }
