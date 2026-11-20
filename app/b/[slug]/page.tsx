@@ -44,7 +44,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const published = !!pageRow?.published;
   const steps: { done: boolean; label: MessageKey; href: string; icon: IconName; optional?: boolean }[] = [
     { done: d.counts.offerings > 0, label: "today.setup.offerings", href: "services", icon: "tag" },
-    { done: (hoursCount ?? 0) > 0, label: "today.setup.hours", href: "calendar/hours", icon: "clock" },
+    { done: (hoursCount ?? 0) > 0, label: "today.setup.hours", href: "calendar/hours?back=today", icon: "clock" },
     { done: hasPeople, label: "today.setup.people", href: "people?add=1", icon: "userPlus" },
     { done: published, label: "today.setup.page", href: "site", icon: "globe" },
     { done: !!formRow?.enabled, label: "today.setup.forms", href: "forms", icon: "clipboard", optional: true },

@@ -61,7 +61,7 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
             <div className="field"><span className="label">{t("appt.slots")}</span>
               {loading || slots === null ? <span className="muted">…</span> : slots.length === 0 ? (hasHours ? <span className="muted small">{t("appt.noslots")}</span> : (
                 <div className="action"><span className="small row"><Icon n="clock" size={16} />{t("appt.nohours")}</span>
-                  <Link className="btn btn-primary btn-small" href={`/b/${slug}/calendar/hours`}><Icon n="clock" />{t("today.setup.hours")}</Link></div>)) : (
+                  <Link className="btn btn-primary btn-small" href={`/b/${slug}/calendar/hours?back=appt`}><Icon n="clock" />{t("today.setup.hours")}</Link></div>)) : (
                 <div className="slot-grid">
                   {slots.map((s) => <button type="button" key={s} className={`slot ${slot === s ? "slot-on" : ""}`} aria-pressed={slot === s} onClick={() => setSlot(s)}>{fmtTime(s, biz.timezone)}</button>)}
                 </div>)}

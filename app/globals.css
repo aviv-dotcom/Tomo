@@ -174,3 +174,6 @@ select.input { padding-inline-end: 8px; }
 .hours-day { justify-content: space-between; min-height: 56px; flex-wrap: wrap; }
 .hours-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; min-width: 96px; }
 .hours-day .hours-times select { min-height: 40px; padding: 0 6px; width: 84px; }
+.done-panel { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: var(--good-soft); color: var(--good); }
+.done-panel .small { color: var(--ink); }
+.done-panel .btn { margin-top: 4px; }

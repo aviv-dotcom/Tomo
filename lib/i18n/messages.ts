@@ -460,6 +460,10 @@ export const he = {
   "hours.bad": "שעת הסיום צריכה להיות אחרי שעת ההתחלה",
   "hours.summary": "פתוח {n} ימים בשבוע",
   "hours.allclosed": "כל הימים סגורים",
+  "hours.done": "סיום, חזרה ל{place}",
+  "hours.place.home": "סיום, חזרה למסך הראשי",
+  "hours.place.appt": "סיום, חזרה לקביעת התור",
+  "hours.place.settings": "סיום, חזרה להגדרות",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -918,4 +922,8 @@ export const en: Record<MessageKey, string> = {
   "hours.bad": "The end time must be after the start time",
   "hours.summary": "Open {n} days a week",
   "hours.allclosed": "Every day is closed",
+  "hours.done": "Done, back to {place}",
+  "hours.place.home": "Done, back to home",
+  "hours.place.appt": "Done, back to the booking",
+  "hours.place.settings": "Done, back to settings",
 };
