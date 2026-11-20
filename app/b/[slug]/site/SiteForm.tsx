@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { translator } from "@/lib/i18n";
 import { saveSite, type SiteState } from "./actions";
 
@@ -9,7 +9,9 @@ type Page = { published: boolean; tagline: string | null; about: string | null; 
 export function SiteForm({ business, slug, page }: { business: string; slug: string; page: Page }) {
   const [state, action, pending] = useActionState<SiteState, FormData>(saveSite, null);
   const [copied, setCopied] = useState(false);
-  const url = typeof window === "undefined" ? `/p/${slug}` : `${window.location.origin}/p/${slug}`;
+  // The full address is known only in the browser; render the path first so server and browser agree.
+  const [url, setUrl] = useState(`/p/${slug}`);
+  useEffect(() => setUrl(`${window.location.origin}/p/${slug}`), [slug]);
   return (
     <>
       <section className="card">
