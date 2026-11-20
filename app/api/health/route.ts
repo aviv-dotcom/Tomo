@@ -8,7 +8,8 @@ export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   // Only whether a key is set, never the key itself.
   const ai = Boolean(process.env.ANTHROPIC_API_KEY);
-  if (!url || !key) return NextResponse.json({ ok: true, db: "not_configured", ai });
+  const version = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local";
+  if (!url || !key) return NextResponse.json({ ok: true, db: "not_configured", ai, version });
   const { data, error } = await createClient(url, key, { auth: { persistSession: false } }).rpc("core_health");
-  return NextResponse.json({ ok: !error, db: error ? "error" : data, ai }, { status: error ? 503 : 200 });
+  return NextResponse.json({ ok: !error, db: error ? "error" : data, ai, version }, { status: error ? 503 : 200 });
 }
