@@ -85,6 +85,7 @@ await visitor.click('button:has-text("לחתום ולשלוח")'); await visitor
 step(5, `health form signed (${qs.length} questions)`);
 await visitor.screenshot({ path: `${OUT}/e2e-client-1-link.png`, fullPage: true });
 await visitor.click('a:has-text("לשנות מועד")'); await visitor.waitForURL("**/move");
+await visitor.click(".days-scroll .day:nth-child(5)");
 await visitor.waitForSelector(".slot"); await visitor.click(".slot:nth-child(12)");
 const newTime = await visitor.textContent(".slot-on");
 await visitor.click('button:has-text("לעבור למועד הזה")'); await visitor.waitForURL("**?moved=1");
