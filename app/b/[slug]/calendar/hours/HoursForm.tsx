@@ -4,13 +4,14 @@ import { useActionState } from "react";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { minToTime } from "@/lib/time";
-import { saveHours, type FormState } from "../actions";
+import { saveCancelHours, saveHours, type FormState } from "../actions";
 
 const t = translator("he");
 
 /** One opening range per day. Several ranges a day are supported by the database and can come later in the UI. */
-export function HoursForm({ business, slug, hours }: { business: string; slug: string; hours: { weekday: number; start_min: number; end_min: number }[] }) {
+export function HoursForm({ business, slug, hours, cancelHours }: { business: string; slug: string; cancelHours: number; hours: { weekday: number; start_min: number; end_min: number }[] }) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveHours, null);
+  const [pState, pAction, pPending] = useActionState<FormState, FormData>(saveCancelHours, null);
   return (
     <main className="page">
       <Link href={`/b/${slug}/calendar`} className="muted small">→ {t("back")}</Link>
@@ -34,6 +35,16 @@ export function HoursForm({ business, slug, hours }: { business: string; slug: s
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
         {state?.ok && !pending && <p className="muted small" role="status">✓ {t("hours.saved")}</p>}
         <button className="btn btn-primary" disabled={pending}>{pending ? t("hours.saving") : t("hours.save")}</button>
+      </form>
+      <form action={pAction} className="card">
+        <h2 className="card-title">{t("policy.title")}</h2>
+        <input type="hidden" name="business" value={business} /><input type="hidden" name="slug" value={slug} />
+        <label className="row small">{t("policy.hours")}
+          <input className="input input-ltr" type="number" name="hours" min={0} max={168} defaultValue={cancelHours} style={{ width: 80 }} aria-label={t("policy.hours")} />
+          {t("policy.hours.unit")}</label>
+        {pState?.error && <p className="error" role="alert">{t(pState.error)}</p>}
+        {pState?.ok && !pPending && <p className="muted small" role="status">✓ {t("card.saved")}</p>}
+        <button className="btn btn-secondary btn-small" disabled={pPending}>{t("policy.save")}</button>
       </form>
     </main>
   );

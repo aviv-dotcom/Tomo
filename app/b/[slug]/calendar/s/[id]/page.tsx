@@ -7,6 +7,7 @@ import { fmtDate, fmtTime, localDate } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
 import { bookingAction } from "../../actions";
 import { AddToSession } from "./AddToSession";
+import { CancelSession } from "./CancelSession";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -56,6 +57,9 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
         </section>
         {isClass && s.status === "scheduled" && candidates.length > 0 && (
           <AddToSession session={s.id} slug={slug} full={booked >= s.capacity} people={candidates} />
+        )}
+        {s.status === "scheduled" && new Date(s.starts_at) > new Date() && (
+          <CancelSession session={s.id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}
       </main>
       <OwnerNav slug={slug} active="calendar" />

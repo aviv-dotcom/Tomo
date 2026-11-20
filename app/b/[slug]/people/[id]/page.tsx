@@ -6,6 +6,7 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { fmtDate, fmtTime } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
 import { PersonForm } from "./PersonForm";
+import { ForgetButton } from "./ForgetButton";
 import { ChargeForm, PaymentForm } from "./MoneyForms";
 import { voidCharge } from "../../money/actions";
 import { shekels } from "@/lib/format";
@@ -22,7 +23,10 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
   const { data, error } = await sb.rpc("person_card", { p_person: id });
   if (error || !data) notFound();
   const p = data as Card;
-  const { data: moneyData } = await sb.rpc("person_money", { p_person: id });
+  const [{ data: moneyData }, { data: formData }] = await Promise.all([
+    sb.rpc("person_money", { p_person: id }), sb.rpc("person_form", { p_person: id }),
+  ]);
+  const form = formData as { questions: string[]; answers: boolean[]; details: string | null; signed_at: string } | null;
   const money = (moneyData ?? { balance: 0, lines: [] }) as { balance: number;
     lines: { type: "charge" | "payment"; id: string; text: string; method?: string; amount: number; void: boolean; at: string }[] };
   return (
@@ -65,7 +69,21 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
             ))}
           </div>
         </section>
+        <section className="card">
+          <h2 className="card-title">{t("card.form")}<span className={`tag ${form ? "tag-good" : ""}`}>{form ? `${t("card.form.signed")} ${fmtDate(form.signed_at, biz.timezone)}` : t("card.form.none")}</span></h2>
+          {form && form.questions.map((q, i) => (
+            <div key={i} className="row small"><span className="grow">{q}</span><b style={{ color: form.answers[i] ? "var(--bad)" : undefined }}>{form.answers[i] ? t("form.yes") : t("form.no")}</b></div>
+          ))}
+          {form?.details && <p className="small" style={{ margin: 0, background: "var(--warn-soft)", padding: 8, borderRadius: 8 }}>{form.details}</p>}
+        </section>
         <PersonForm p={p} slug={slug} />
+        <section className="card">
+          <h2 className="card-title">{t("card.privacy")}</h2>
+          <div className="row">
+            <a className="btn btn-secondary btn-small" href={`/b/${slug}/people/${p.id}/export`}>{t("card.export")}</a>
+            <ForgetButton id={p.id} slug={slug} />
+          </div>
+        </section>
       </main>
       <OwnerNav slug={slug} active="people" />
     </>

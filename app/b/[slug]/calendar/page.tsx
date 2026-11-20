@@ -42,6 +42,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
           <Link className="btn btn-primary btn-small" href={`/b/${slug}/calendar/new?d=${day}`}>{t("cal.new_appt")}</Link>
           <Link className="btn btn-secondary btn-small" href={`/b/${slug}/calendar/class`}>{t("cal.new_class")}</Link>
           <Link className="btn btn-secondary btn-small" href={`/b/${slug}/calendar/hours`}>{t("cal.hours")}</Link>
+          <Link className="btn btn-secondary btn-small" href={`/b/${slug}/calendar/off`}>{t("cal.off")}</Link>
         </div>
         {items.length === 0 && <p className="muted">{t("cal.empty")}</p>}
         {items.map((s) => (

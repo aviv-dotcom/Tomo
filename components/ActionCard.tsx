@@ -4,7 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { whatsappLink } from "@/lib/format";
 import type { Action } from "@/lib/compose";
-import { resolveAction } from "@/app/b/[slug]/inbox/actions";
+import { forgetFromRequest, resolveAction } from "@/app/b/[slug]/inbox/actions";
 
 const t = translator("he");
 
@@ -16,6 +16,19 @@ export function ActionCard({ action, text, slug }: { action: Action; text: strin
   if (done) return null;
   const finish = (status: "sent" | "dismissed") => start(async () => { await resolveAction(action.id, status, slug); setDone(true); });
   const phone = action.person.phone;
+  if (action.kind === "deletion_request") {
+    return (
+      <div className="action">
+        <div className="row"><span className="grow"><b>{action.person.name}</b><span className="muted small">{t("act.deletion_request")}</span></span></div>
+        <p className="small" style={{ margin: 0, lineHeight: 1.5 }}>{t("act.deletion_body")}</p>
+        <div className="row">
+          <button className="btn btn-primary btn-small" disabled={pending}
+            onClick={() => { if (confirm(t("card.forget.confirm"))) start(async () => { await forgetFromRequest(action.id, action.person.id, slug); setDone(true); }); }}>{t("act.delete_now")}</button>
+          <button className="btn btn-secondary btn-small" disabled={pending} onClick={() => finish("dismissed")}>{t("act.reject")}</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="action">
       <div className="row"><span className="grow"><b>{action.person.name}</b><span className="muted small">{t(`act.${action.kind}` as MessageKey)}</span></span></div>

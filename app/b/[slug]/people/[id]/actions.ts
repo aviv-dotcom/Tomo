@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { serverSupabase } from "@/lib/supabase/server";
 import { errorKey } from "@/lib/errors";
 import type { MessageKey } from "@/lib/i18n/messages";
@@ -16,4 +17,12 @@ export async function savePerson(_prev: SaveState, form: FormData): Promise<Save
   if (error) return { error: errorKey(error.message) };
   revalidatePath(`/b/${slug}/people/${id}`); revalidatePath(`/b/${slug}/people`);
   return { ok: Date.now() };
+}
+
+export async function forgetPerson(f: FormData): Promise<void> {
+  const sb = await serverSupabase();
+  const slug = String(f.get("slug") ?? "");
+  await sb.rpc("forget_person", { p_person: String(f.get("id") ?? "") });
+  revalidatePath(`/b/${slug}/people`);
+  redirect(`/b/${slug}/people`);
 }

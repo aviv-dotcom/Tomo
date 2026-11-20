@@ -67,3 +67,39 @@ export async function bookingAction(f: FormData): Promise<void> {
   else await sb.rpc("mark_attendance", { p_booking: id, p_status: op });
   revalidatePath(`/b/${str(f, "slug")}/calendar/s/${str(f, "session")}`);
 }
+
+export async function cancelSession(_p: FormState, f: FormData): Promise<FormState> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("cancel_session", { p_session: str(f, "session"), p_reason: str(f, "reason") || null });
+  if (error) return { error: errorKey(error.message) };
+  redirect(`/b/${str(f, "slug")}/calendar?d=${str(f, "date")}`);
+}
+
+export async function addTimeOff(_p: FormState, f: FormData): Promise<FormState> {
+  const sb = await serverSupabase();
+  const business = str(f, "business"), from = str(f, "from"), to = str(f, "to");
+  if (!from || !to || to < from) return { error: "err.invalid_range" };
+  const next = new Date(`${to}T12:00:00Z`); next.setUTCDate(next.getUTCDate() + 1);
+  const [{ data: start }, { data: end }] = await Promise.all([
+    sb.rpc("cal_at", { p_business: business, p_date: from, p_min: 0 }),
+    sb.rpc("cal_at", { p_business: business, p_date: next.toISOString().slice(0, 10), p_min: 0 }),
+  ]);
+  const { error } = await sb.rpc("add_time_off", { p_business: business, p_from: start, p_to: end, p_note: str(f, "note") || null });
+  if (error) return { error: errorKey(error.message) };
+  revalidatePath(`/b/${str(f, "slug")}/calendar/off`);
+  return { ok: Date.now() };
+}
+
+export async function removeTimeOff(f: FormData): Promise<void> {
+  const sb = await serverSupabase();
+  await sb.rpc("delete_time_off", { p_time_off: str(f, "id") });
+  revalidatePath(`/b/${str(f, "slug")}/calendar/off`);
+}
+
+export async function saveCancelHours(_p: FormState, f: FormData): Promise<FormState> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("set_cancel_hours", { p_business: str(f, "business"), p_hours: Number(str(f, "hours")) });
+  if (error) return { error: errorKey(error.message) };
+  revalidatePath(`/b/${str(f, "slug")}/calendar/hours`);
+  return { ok: Date.now() };
+}

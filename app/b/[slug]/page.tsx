@@ -85,6 +85,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           <div className="step"><span className={`dot ${d.counts.offerings ? "dot-done" : ""}`}>{d.counts.offerings ? "✓" : ""}</span>{t("today.setup.offerings")}</div>
           <div className="step"><span className={`dot ${hasPeople ? "dot-done" : ""}`}>{hasPeople ? "✓" : ""}</span>{t("today.setup.people")}</div>
           <Link className="step link-row" href={`/b/${d.business.slug}/site`}><span className={`dot ${published ? "dot-done" : ""}`}>{published ? "✓" : ""}</span><span className="grow">{t("today.setup.page")}</span>{!published && <span className="chev">‹</span>}</Link>
+          <Link className="step link-row" href={`/b/${d.business.slug}/forms`}><span className="dot" /><span className="grow">{t("forms.title")}</span><span className="chev">‹</span></Link>
           <div className="step"><span className="dot" /><span className="grow">{t("today.setup.pay")}</span><span className="tag">{t("today.soon")}</span></div>
         </section>
 
