@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtTime, isDate, localDate, weekday } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
+import { WaitlistCard, type WaitEntry } from "@/components/WaitlistCard";
 import { Empty, Icon, IconTile } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
   const day = isDate(d) ? d : today;
   const { data } = await sb.rpc("day_agenda", { p_business: biz.id, p_date: day });
   const items = (data ?? []) as Item[];
+  const { data: waitData } = await sb.rpc("list_waitlist", { p_business: biz.id });
   const start = addDays(day, -weekday(day));
   const week = Array.from({ length: 7 }, (_, i) => addDays(start, i));
   return (
@@ -57,6 +59,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
             </span>
           </Link>
         ))}
+        <WaitlistCard slug={slug} timezone={biz.timezone} entries={(waitData ?? []) as WaitEntry[]} date={day} />
       </main>
       <OwnerNav slug={slug} active="calendar" />
     </>

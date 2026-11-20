@@ -8,7 +8,7 @@ import { forgetFromRequest, resolveAction } from "@/app/b/[slug]/inbox/actions";
 import { Icon, IconTile, type IconName } from "@/components/Icon";
 
 const t = translator("he");
-const KIND_ICON: Record<string, IconName> = { booking_confirm: "check", reminder_24h: "bell", no_show: "ban", missed_you: "heart", session_cancelled: "calendarOff" };
+const KIND_ICON: Record<string, IconName> = { booking_confirm: "check", reminder_24h: "bell", no_show: "ban", missed_you: "heart", session_cancelled: "calendarOff", waitlist_offer: "clock", waitlist_promoted: "users" };
 
 /** One prepared message. Sending opens WhatsApp with the text ready; nothing is sent without the owner's tap. */
 export function ActionCard({ action, text, slug }: { action: Action; text: string; slug: string }) {
@@ -33,7 +33,7 @@ export function ActionCard({ action, text, slug }: { action: Action; text: strin
   }
   return (
     <div className="action">
-      <div className="row"><IconTile n={KIND_ICON[action.kind] ?? "chat"} tone={action.kind === "session_cancelled" || action.kind === "no_show" ? "warn" : "accent"} size={34} /><span className="grow"><b>{action.person.name}</b><span className="muted small">{t(`act.${action.kind}` as MessageKey)}</span></span></div>
+      <div className="row"><IconTile n={KIND_ICON[action.kind] ?? "chat"} tone={action.kind === "session_cancelled" || action.kind === "no_show" ? "warn" : action.kind === "waitlist_offer" ? "good" : "accent"} size={34} /><span className="grow"><b>{action.person.name}</b><span className="muted small">{t(`act.${action.kind}` as MessageKey)}</span></span></div>
       {action.data.typed_name && <p className="small row" style={{ margin: 0, background: "var(--warn-soft)", padding: 8, borderRadius: 8, alignItems: "start" }}><Icon n="info" size={15} /><span>{t("act.typed_name").replace("{name}", action.data.typed_name)}</span></p>}
       <textarea className="input" rows={3} value={body} onChange={(e) => setBody(e.target.value)} aria-label={action.person.name} style={{ padding: 10, lineHeight: 1.5 }} />
       {!phone && <span className="muted small">{t("act.nophone")}</span>}

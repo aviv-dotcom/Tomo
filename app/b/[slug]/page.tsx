@@ -8,6 +8,7 @@ import Link from "next/link";
 import { OwnerNav } from "@/components/OwnerNav";
 import { ActionCard } from "@/components/ActionCard";
 import { loadInbox } from "@/lib/inbox";
+import { WaitlistCard, type WaitEntry } from "@/components/WaitlistCard";
 import { Avatar, Empty, Icon, IconTile, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
     sb.from("business_hours").select("weekday", { count: "exact", head: true }).eq("business_id", biz.id),
   ]);
   const published = !!pageRow?.published;
+  const { data: waitData } = await sb.rpc("list_waitlist", { p_business: biz.id });
+  const waiting = (waitData ?? []) as WaitEntry[];
   // The next days: what is booked, with page bookings from the last two days marked as new.
   const { data: fromTs } = await sb.rpc("cal_at", { p_business: biz.id, p_date: addDays(d.today, 1), p_min: 0 });
   const { data: upRows } = await sb.from("bookings").select("source, created_at, people(full_name), sessions!inner(id, starts_at, capacity, offerings(name))")
@@ -125,6 +128,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
             </Link>
           ))}
         </section>
+
+        <WaitlistCard slug={d.business.slug} timezone={d.business.timezone} entries={waiting} />
 
         {!setupDone && (
           <section className="card" style={{ gap: 0 }}>

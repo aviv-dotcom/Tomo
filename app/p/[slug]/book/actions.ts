@@ -22,3 +22,17 @@ export async function publicBook(_p: BookState, f: FormData): Promise<BookState>
   if (error) return { error: errorKey(error.message) };
   return { done: data as { offering: string; starts_at: string; location: string | null; addons?: string[] } };
 }
+
+export type WaitState = { error?: MessageKey; done?: { offering: string; date?: string; part?: string; starts_at?: string } } | null;
+
+/** Joins the waitlist: a day and part of day for an appointment, or a full class. */
+export async function publicWaitlist(_p: WaitState, f: FormData): Promise<WaitState> {
+  if (String(f.get("website") ?? "")) return { error: "err.generic" };
+  const s = (k: string) => String(f.get(k) ?? "").trim();
+  const { data, error } = await anonSupabase().rpc("public_waitlist", {
+    p_slug: s("slug"), p_name: s("name"), p_phone: s("phone"), p_email: s("email") || null, p_marketing: f.get("marketing") === "on",
+    p_offering: s("offering") || null, p_date: s("date") || null, p_part: s("part") || "any", p_session: s("session") || null,
+  });
+  if (error) return { error: errorKey(error.message) };
+  return { done: data as { offering: string; date?: string; part?: string; starts_at?: string } };
+}

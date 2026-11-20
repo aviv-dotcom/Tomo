@@ -66,7 +66,7 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
               {c.left > 0 && c.left <= 3 && <span className="small" style={{ color: "var(--bad)" }}>{t("pub.few_left").replace("{n}", String(c.left))}</span>}</span>
             {c.left > 0
               ? <Link className="btn btn-primary btn-small" href={`/p/${p.slug}/book?s=${c.id}`}>{t("pub.join")}</Link>
-              : <span className="tag tag-warn">{t("pub.full")}</span>}
+              : <Link className="btn btn-secondary btn-small" href={`/p/${p.slug}/book?s=${c.id}&w=1`}><Icon n="clock" />{t("pub.waitlist")}</Link>}
           </div>
         ))}
       </section>

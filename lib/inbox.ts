@@ -12,5 +12,6 @@ export async function loadInbox(sb: SupabaseClient, biz: Biz, limit = 50) {
   ]);
   const base = siteBase();
   const pageUrl = page?.published && base ? `${base}/p/${biz.slug}` : null;
-  return ((data ?? []) as Action[]).map((a) => ({ action: a, text: compose(a, { business: biz.name, timezone: biz.timezone, pageUrl, base }) }));
+  // An offer for a time that has already passed is no longer useful.
+  return ((data ?? []) as Action[]).filter((a) => !(a.kind === "waitlist_offer" && a.data.starts_at && new Date(a.data.starts_at) < new Date())).map((a) => ({ action: a, text: compose(a, { business: biz.name, timezone: biz.timezone, pageUrl, base }) }));
 }

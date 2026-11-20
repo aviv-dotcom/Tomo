@@ -12,12 +12,12 @@ import { shekels } from "@/lib/format";
 import { Back, Icon } from "@/components/Icon";
 
 const t = translator("he");
-type Props = { biz: { id: string; timezone: string }; slug: string; date: string; today: string; hasHours: boolean; openDays: number[]; person: string;
+type Props = { biz: { id: string; timezone: string }; slug: string; date: string; today: string; hasHours: boolean; openDays: number[]; initialOffering: string; person: string;
   offerings: { id: string; name: string; minutes: number | null }[]; addons: Addon[]; people: { id: string; name: string }[] };
 
-export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, person, offerings, addons, people }: Props) {
+export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, initialOffering, person, offerings, addons, people }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(bookAppointment, null);
-  const [offering, setOffering] = useState(offerings[0]?.id ?? "");
+  const [offering, setOffering] = useState(offerings.some((o) => o.id === initialOffering) ? initialOffering : offerings[0]?.id ?? "");
   const [picked, setPicked] = useState<string[]>([]);
   const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[] | null>(null);
