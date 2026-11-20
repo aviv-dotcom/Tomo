@@ -17,7 +17,7 @@ type Offering = { id: string; name: string; delivery: string; billing: string; m
 type Today = {
   business: { id: string; name: string; slug: string; timezone: string };
   today: string;
-  counts: { active: number; leads: number; leads_week: number; offerings: number };
+  counts: { active: number; leads: number; leads_week: number; offerings: number; collected_month: number };
   offerings: Offering[];
   recent: { id: string; name: string; status: string }[];
 };
@@ -55,7 +55,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           <div className="kpi"><span className="muted small">{t("today.kpi.active")}</span><b>{d.counts.active}</b></div>
           <div className="kpi"><span className="muted small">{t("today.kpi.leads")}</span><b>{d.counts.leads_week}</b></div>
           <div className="kpi"><span className="muted small">{t("today.kpi.offerings")}</span><b>{d.counts.offerings}</b></div>
-          <div className="kpi"><span className="muted small">{t("today.kpi.collected")}</span><span className="tag">{t("today.soon")}</span></div>
+          <Link className="kpi link-row" href={`/b/${d.business.slug}/money`}><span className="muted small">{t("today.kpi.collected")}</span><b>{shekels(d.counts.collected_month)}</b></Link>
         </div>
 
         <section className="card">
