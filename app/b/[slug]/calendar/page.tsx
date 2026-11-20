@@ -34,7 +34,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
         <div className="days">
           {week.map((w) => (
             <Link key={w} href={`/b/${slug}/calendar?d=${w}`} className={`day ${w === day ? "day-on" : ""}`} aria-current={w === day ? "date" : undefined}>
-              {t(`day.${weekday(w)}` as MessageKey).slice(0, 1)}׳<b>{dayNum(w)}</b>
+              {t(`dayShort.${weekday(w)}` as MessageKey)}<b>{dayNum(w)}</b>
             </Link>
           ))}
         </div>

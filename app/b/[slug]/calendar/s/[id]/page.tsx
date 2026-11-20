@@ -38,7 +38,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
       <main className="page">
         <Link href={`/b/${slug}/calendar?d=${localDate(tz, new Date(s.starts_at))}`} className="muted small">→ {t("back")}</Link>
         <h1 className="h1">{s.offering.name}</h1>
-        <p className="sub">{fmtDate(s.starts_at, tz)} · {fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}{s.location ? ` · ${s.location}` : ""}</p>
+        <p className="sub">{fmtDate(s.starts_at, tz)} · <bdi dir="ltr">{fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}</bdi>{s.location ? ` · ${s.location}` : ""}</p>
         <section className="card" style={{ gap: 0 }}>
           <h2 className="card-title" style={{ marginBottom: 6 }}>{t("session.participants")}{isClass && <span className="muted small">{booked}/{s.capacity}</span>}</h2>
           {s.bookings.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("session.empty")}</p>}
