@@ -14,6 +14,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Page images are shrunk in the browser first (to about 300KB); this leaves room for a large one.
+  experimental: { serverActions: { bodySizeLimit: "4mb" } },
   images: supabaseHost ? { remotePatterns: [{ protocol: "https", hostname: supabaseHost }] } : undefined,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
