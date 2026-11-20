@@ -11,3 +11,10 @@ export function suggestSlug(name: string): string {
   if (latin.length >= 3) return latin;
   return "biz-" + Math.random().toString(36).slice(2, 8);
 }
+
+/** wa.me wants the international number without + or leading zero. Optional prefilled text. */
+export function whatsappLink(phone: string, text?: string): string {
+  const d = phone.replace(/\D/g, "");
+  const n = d.startsWith("0") ? "972" + d.slice(1) : d;
+  return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+}

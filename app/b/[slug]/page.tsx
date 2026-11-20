@@ -7,6 +7,8 @@ import { fmtTime } from "@/lib/time";
 import Link from "next/link";
 import { OwnerNav } from "@/components/OwnerNav";
 import { AddPerson } from "./AddPerson";
+import { ActionCard } from "@/components/ActionCard";
+import { loadInbox } from "@/lib/inbox";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -36,6 +38,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const hasPeople = d.counts.active + d.counts.leads > 0;
   const { data: pageRow } = await sb.from("business_pages").select("published").eq("business_id", biz.id).maybeSingle();
   const published = !!pageRow?.published;
+  const inbox = await loadInbox(sb, { id: biz.id, name: d.business.name, slug: d.business.slug, timezone: d.business.timezone });
 
   return (
     <>
@@ -56,8 +59,13 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
         </div>
 
         <section className="card">
-          <h2 className="card-title">{t("today.waiting.title")}</h2>
-          <p className="muted" style={{ margin: 0 }}>{t("today.waiting.empty")}</p>
+          <h2 className="card-title">{t("today.waiting.title")}{inbox.length > 0 && <span className="tag">{inbox.length}</span>}</h2>
+          {inbox.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("today.waiting.empty")}</p>}
+          {inbox.slice(0, 3).map((i) => <ActionCard key={i.action.id} action={i.action} text={i.text} slug={d.business.slug} />)}
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            {inbox.length > 3 ? <Link className="small" href={`/b/${d.business.slug}/inbox`}>{t("act.all")} ({inbox.length})</Link> : <span />}
+            <Link className="small muted" href={`/b/${d.business.slug}/automations`}>{t("act.settings")}</Link>
+          </div>
         </section>
 
         <section className="card" style={{ gap: 0 }}>

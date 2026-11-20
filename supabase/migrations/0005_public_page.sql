@@ -23,6 +23,9 @@ $$;
 alter table people add column phone_digits text generated always as (phone_digits_of(phone)) stored;
 create index people_phone_digits on people (business_id, phone_digits);
 
+-- Where a booking came from: the owner's screens or the public page.
+alter table bookings add column source text not null default 'staff' check (source in ('staff', 'page'));
+
 -- ── Owner: edit and publish ────────────────────────────────────────────────
 create function save_page(p_business uuid, p_published boolean, p_tagline text, p_about text, p_whatsapp text, p_address text) returns void
 language plpgsql security definer set search_path = public as $$
@@ -134,8 +137,8 @@ begin
     if s.id is null or s.status <> 'scheduled' or s.capacity < 2 or s.starts_at <= now() then raise exception 'session_closed'; end if;
     if exists (select 1 from bookings where session_id = s.id and person_id = v_person and status in ('booked', 'waitlist')) then raise exception 'already_booked'; end if;
     if (select count(*) from bookings where session_id = s.id and status = 'booked') >= s.capacity then raise exception 'full'; end if;
-    insert into bookings (business_id, session_id, person_id) values (v_id, s.id, v_person)
-    on conflict (session_id, person_id) do update set status = 'booked', created_at = now();
+    insert into bookings (business_id, session_id, person_id, source) values (v_id, s.id, v_person, 'page')
+    on conflict (session_id, person_id) do update set status = 'booked', created_at = now(), source = 'page';
     v_session := s.id;
   else
     select * into o from offerings where id = p_offering and business_id = v_id and active;
@@ -151,7 +154,7 @@ begin
     if not cal_is_free(v_id, p_starts_at, p_starts_at + make_interval(mins => v_len)) then raise exception 'slot_taken'; end if;
     insert into sessions (business_id, offering_id, starts_at, ends_at, capacity)
     values (v_id, o.id, p_starts_at, p_starts_at + make_interval(mins => v_len), 1) returning id into v_session;
-    insert into bookings (business_id, session_id, person_id) values (v_id, v_session, v_person);
+    insert into bookings (business_id, session_id, person_id, source) values (v_id, v_session, v_person, 'page');
   end if;
 
   insert into audit_log (business_id, actor, action, target, data) values (v_id, null, 'booking.public', v_session::text, '{}'::jsonb);

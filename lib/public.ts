@@ -15,8 +15,4 @@ export const getPublicPage = cache(async (slug: string): Promise<PublicPage | nu
   return (data as PublicPage | null) ?? null;
 });
 
-/** wa.me wants the international number without + or leading zero. */
-export function whatsappLink(phone: string): string {
-  const d = phone.replace(/\D/g, "");
-  return `https://wa.me/${d.startsWith("0") ? "972" + d.slice(1) : d}`;
-}
+export { whatsappLink } from "@/lib/format";
