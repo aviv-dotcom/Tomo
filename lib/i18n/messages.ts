@@ -455,6 +455,11 @@ export const he = {
   "hours.suggested": "הצענו שעות התחלתיות: ראשון עד חמישי, 09:00–18:00. אפשר לשנות ולשמור.",
   "hours.none.confirm": "כל הימים מסומנים כסגורים, ולכן לקוחות לא יוכלו לקבוע תור. לשמור בכל זאת?",
   "appt.nohours": "עוד לא הוגדרו שעות פעילות, ולכן אין שעות פנויות להצעה.",
+  "hours.open": "פתוח",
+  "hours.copy": "להעתיק את השעות של היום הראשון לכל הימים הפתוחים",
+  "hours.bad": "שעת הסיום צריכה להיות אחרי שעת ההתחלה",
+  "hours.summary": "פתוח {n} ימים בשבוע",
+  "hours.allclosed": "כל הימים סגורים",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -908,4 +913,9 @@ export const en: Record<MessageKey, string> = {
   "hours.suggested": "We suggested starting hours: Sunday to Thursday, 09:00–18:00. Change them and save.",
   "hours.none.confirm": "Every day is closed, so clients cannot book. Save anyway?",
   "appt.nohours": "Opening hours are not set yet, so there are no free times to offer.",
+  "hours.open": "open",
+  "hours.copy": "Copy the first day's hours to every open day",
+  "hours.bad": "The end time must be after the start time",
+  "hours.summary": "Open {n} days a week",
+  "hours.allclosed": "Every day is closed",
 };

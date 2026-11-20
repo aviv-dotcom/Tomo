@@ -171,3 +171,6 @@ select.input { padding-inline-end: 8px; }
 .btn-row form { display: flex; }
 .btn-row form .btn { flex: 1; }
 .day-closed:not(.day-on) { opacity: .4; }
+.hours-day { justify-content: space-between; min-height: 56px; flex-wrap: wrap; }
+.hours-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; min-width: 96px; }
+.hours-day .hours-times select { min-height: 40px; padding: 0 6px; width: 84px; }

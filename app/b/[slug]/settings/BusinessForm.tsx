@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { translator } from "@/lib/i18n";
 import { saveCancelHours, updateBusiness, type SettingsState } from "./actions";
 import { Icon, Title } from "@/components/Icon";
@@ -11,7 +11,12 @@ export function BusinessForm({ business, name, slug, saved }: { business: string
   const [newSlug, setNewSlug] = useState(slug);
   const changed = newSlug.trim().toLowerCase() !== slug;
   return (
-    <form action={action} className="card" onSubmit={(e) => { if (changed && !confirm(t("set.slug.confirm"))) e.preventDefault(); }}>
+    <form className="card" onSubmit={(e) => {
+      e.preventDefault();
+      if (changed && !confirm(t("set.slug.confirm"))) return;
+      const data = new FormData(e.currentTarget);
+      startTransition(() => action(data));
+    }}>
       <Title n="store">{t("set.business")}</Title>
       <input type="hidden" name="business" value={business} /><input type="hidden" name="old_slug" value={slug} />
       <label className="field"><span className="label">{t("set.name")}</span>
