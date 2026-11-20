@@ -5,6 +5,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { createClassSeries, type FormState } from "../actions";
 import { TimeSelect } from "@/components/TimeSelect";
+import { Back, Icon } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -12,7 +13,7 @@ export function ClassForm({ business, slug, offerings }: { business: string; slu
   const [state, action, pending] = useActionState<FormState, FormData>(createClassSeries, null);
   return (
     <main className="page">
-      <Link href={`/b/${slug}/calendar`} className="muted small">→ {t("back")}</Link>
+      <Back href={`/b/${slug}/calendar`} label={t("back")} />
       <h1 className="h1">{t("class.title")}</h1>
       {offerings.length === 0 ? <p className="muted">{t("class.no_services")}</p> : (
         <form action={action} className="card" style={{ gap: 14 }}>
@@ -25,7 +26,7 @@ export function ClassForm({ business, slug, offerings }: { business: string; slu
           <label className="field"><span className="label">{t("class.capacity")}</span><input className="input input-ltr" type="number" name="capacity" min={1} max={500} defaultValue={10} required /></label>
           <label className="field"><span className="label">{t("class.location")}</span><input className="input" name="location" maxLength={80} /></label>
           {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-          <button className="btn btn-primary" disabled={pending}>{pending ? t("class.creating") : t("class.create")}</button>
+          <button className="btn btn-primary" disabled={pending}><Icon n="repeat" />{pending ? t("class.creating") : t("class.create")}</button>
         </form>
       )}
     </main>

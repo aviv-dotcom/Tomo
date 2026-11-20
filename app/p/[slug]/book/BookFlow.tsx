@@ -5,6 +5,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtDate, fmtTime, weekday } from "@/lib/time";
 import { publicBook, publicSlots, type BookState } from "./actions";
+import { Back, Icon, Title } from "@/components/Icon";
 
 const t = translator("he");
 type Props = { slug: string; name: string; timezone: string; today: string;
@@ -28,11 +29,11 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
   if (state?.done) {
     return (
       <main className="page" style={{ paddingTop: 48 }}>
-        <span className="hero-mark" aria-hidden="true">✓</span>
+        <span className="hero-mark" style={{ background: "var(--good)" }} aria-hidden="true"><Icon n="check" size={32} /></span>
         <h1 className="h1">{t("pubbook.done.title")}</h1>
         <div className="card">
           <b>{state.done.offering}</b>
-          <span>{fmtDate(state.done.starts_at, timezone)} · {fmtTime(state.done.starts_at, timezone)}{state.done.location ? ` · ${state.done.location}` : ""}</span>
+          <span className="meta"><Icon n="calendar" size={15} />{fmtDate(state.done.starts_at, timezone)} · {fmtTime(state.done.starts_at, timezone)}</span>{state.done.location && <span className="meta"><Icon n="pin" size={15} />{state.done.location}</span>}
           <span className="muted">{name}</span>
         </div>
         <p className="sub">{t("pubbook.done.body")}</p>
@@ -43,16 +44,16 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
 
   return (
     <main className="page" style={{ paddingBottom: 40 }}>
-      <Link href={`/p/${slug}`} className="muted small">→ {name}</Link>
+      <Back href={`/p/${slug}`} label={name} />
       <h1 className="h1">{offering ? t("pubbook.title") : t("pubbook.join.title")}</h1>
-      <div className="card"><b>{offering?.name ?? session?.name}</b>
+      <div className="card"><b className="title-in"><Icon n={offering ? "user" : "users"} className="title-icon" />{offering?.name ?? session?.name}</b>
         {session && <span className="muted">{fmtDate(session.starts_at, timezone)} · {fmtTime(session.starts_at, timezone)}{session.location ? ` · ${session.location}` : ""}</span>}
         {offering?.minutes && <span className="muted small">{offering.minutes} {t("minutes")}</span>}
       </div>
 
       {offering && (
         <section className="card">
-          <h2 className="card-title">{t("pubbook.day")}</h2>
+          <Title n="calendar">{t("pubbook.day")}</Title>
           <div className="days days-scroll">
             {days.map((d) => (
               <button type="button" key={d} className={`day ${d === day ? "day-on" : ""}`} aria-pressed={d === day} onClick={() => setDay(d)}>
@@ -60,7 +61,7 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
               </button>
             ))}
           </div>
-          <h2 className="card-title">{t("pubbook.time")}</h2>
+          <Title n="clock">{t("pubbook.time")}</Title>
           {loading || slots === null ? <span className="muted">…</span> : slots.length === 0 ? <span className="muted small">{t("pubbook.notimes")}</span> : (
             <div className="slot-grid">
               {slots.map((s) => <button type="button" key={s} className={`slot ${slot === s ? "slot-on" : ""}`} aria-pressed={slot === s} onClick={() => setSlot(s)}>{fmtTime(s, timezone)}</button>)}
@@ -70,7 +71,7 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
       )}
 
       <form action={action} className="card" style={{ gap: 12 }}>
-        <h2 className="card-title">{t("pubbook.details")}</h2>
+        <Title n="user">{t("pubbook.details")}</Title>
         <input type="hidden" name="slug" value={slug} />
         {offering && <><input type="hidden" name="offering" value={offering.id} /><input type="hidden" name="slot" value={slot} /></>}
         {session && <input type="hidden" name="session" value={session.id} />}
@@ -83,7 +84,7 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
         <button className="btn btn-primary" disabled={pending || (!!offering && !slot)}>
           {pending ? t("pubbook.sending") : offering ? t("pubbook.submit") : t("pubbook.submit.join")}
         </button>
-        <p className="muted small" style={{ margin: 0 }}>{t("pubbook.privacy")}</p>
+        <p className="muted small row" style={{ margin: 0 }}><Icon n="shield" size={15} />{t("pubbook.privacy")}</p>
       </form>
     </main>
   );

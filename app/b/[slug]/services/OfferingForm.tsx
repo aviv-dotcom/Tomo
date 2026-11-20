@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels } from "@/lib/format";
 import { saveOffering, type SvcState } from "./actions";
+import { Icon, IconTile } from "@/components/Icon";
 
 const t = translator("he");
 export type Offering = { id: string; name: string; delivery: string; billing: string; minutes: number | null; price_agorot: number;
@@ -22,12 +23,14 @@ export function OfferingForm({ business, slug, offering }: { business: string; s
   if (!open) {
     return offering ? (
       <button type="button" className="list-row link-row" style={{ width: "100%", background: "none", border: 0, borderBottom: "1px solid var(--line)", textAlign: "start", cursor: "pointer" }} onClick={() => setOpen(true)}>
+        <IconTile n={offering.delivery === "class" ? "users" : offering.delivery === "appointment" ? "user" : offering.delivery === "addon" ? "plus" : "tag"} tone={offering.active ? "accent" : "plain"} size={34} />
         <span className="grow"><span>{offering.name}</span>
           <span className="muted small">{t(`delivery.${offering.delivery}` as MessageKey)}{offering.minutes ? ` · ${offering.minutes} ${t("minutes")}` : ""}</span></span>
         {!offering.active && <span className="tag tag-warn">{t("svc.hidden")}</span>}
         <span className="price">{shekels(offering.price_agorot)}</span>
+        <Icon n="edit" size={16} className="chev" />
       </button>
-    ) : <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>{t("svc.add")}</button>;
+    ) : <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}><Icon n="plus" />{t("svc.add")}</button>;
   }
   return (
     <form action={action} className="card" style={{ gap: 12, margin: "8px 0" }}>
@@ -49,7 +52,7 @@ export function OfferingForm({ business, slug, offering }: { business: string; s
       <label className="check"><input type="checkbox" name="active" defaultChecked={offering?.active ?? true} /> {t("svc.active")}</label>
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
       <div className="row">
-        <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("svc.saving") : t("svc.save")}</button>
+        <button className="btn btn-primary btn-small" disabled={pending}><Icon n="check" />{pending ? t("svc.saving") : t("svc.save")}</button>
         <button type="button" className="btn btn-secondary btn-small" onClick={() => setOpen(false)}>{t("svc.cancel")}</button>
       </div>
     </form>

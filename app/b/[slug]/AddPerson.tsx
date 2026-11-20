@@ -2,6 +2,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { translator } from "@/lib/i18n";
 import { addPerson, type AddPersonState } from "./actions";
+import { Icon } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -17,7 +18,7 @@ export function AddPerson({ business, slug }: { business: string; slug: string }
       <input className="input input-ltr" name="phone" type="tel" inputMode="tel" placeholder={t("today.people.phone")} aria-label={t("today.people.phone")} />
       <label className="check"><input type="checkbox" name="lead" /> {t("today.people.lead")}</label>
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("today.people.adding") : t("today.people.add")}</button>
+      <button className="btn btn-primary btn-small" disabled={pending}><Icon n="plus" />{pending ? t("today.people.adding") : t("today.people.add")}</button>
     </form>
   );
 }

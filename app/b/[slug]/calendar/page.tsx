@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtTime, isDate, localDate, weekday } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
+import { Empty, Icon, IconTile } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -27,9 +28,9 @@ export default async function CalendarPage({ params, searchParams }: { params: P
         <div className="top"><h1 className="h1">{t("cal.title")}</h1>
           {day !== today && <Link className="chip" href={`/b/${slug}/calendar`}>{t("cal.today")}</Link>}</div>
         <div className="row" style={{ justifyContent: "space-between" }}>
-          <Link className="chip" href={`/b/${slug}/calendar?d=${addDays(start, -7)}`} aria-label="שבוע קודם">→</Link>
+          <Link className="chip" href={`/b/${slug}/calendar?d=${addDays(start, -7)}`} aria-label={t("cal.prev")}><Icon n="back" size={16} /></Link>
           <span className="muted small">{t(`day.${weekday(day)}` as MessageKey)} {dayNum(day)}.{Number(day.slice(5, 7))}</span>
-          <Link className="chip" href={`/b/${slug}/calendar?d=${addDays(start, 7)}`} aria-label="שבוע הבא">←</Link>
+          <Link className="chip" href={`/b/${slug}/calendar?d=${addDays(start, 7)}`} aria-label={t("cal.next")}><Icon n="chev" size={16} /></Link>
         </div>
         <div className="days">
           {week.map((w) => (
@@ -39,13 +40,14 @@ export default async function CalendarPage({ params, searchParams }: { params: P
           ))}
         </div>
         <div className="row">
-          <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?d=${day}`}>{t("cal.new_appt")}</Link>
-          <Link className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/class`}>{t("cal.new_class")}</Link>
+          <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?d=${day}`}><Icon n="calendarPlus" />{t("cal.new_appt")}</Link>
+          <Link className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/class`}><Icon n="repeat" />{t("cal.new_class")}</Link>
         </div>
-        {items.length === 0 && <p className="muted">{t("cal.empty")}</p>}
+        {items.length === 0 && <div className="card"><Empty n="sun" text={t("cal.empty")} /></div>}
         {items.map((s) => (
           <Link key={s.id} href={`/b/${slug}/calendar/s/${s.id}`} className="session">
             <span className="session-time">{fmtTime(s.starts_at, biz.timezone)}</span>
+            <IconTile n={s.capacity > 1 ? "users" : "user"} size={32} />
             <span className="grow">
               <b>{s.offering}{s.capacity === 1 && s.people[0] ? ` · ${s.people[0]}` : ""}</b>
               <span className="muted small">

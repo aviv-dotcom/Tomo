@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { translator } from "@/lib/i18n";
 import { serverSupabase } from "@/lib/supabase/server";
+import { IconTile } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
+const HOME_ICONS = { "home.point1": "users", "home.point2": "bell", "home.point3": "inbox" } as const;
 
 export default async function Home() {
   const t = translator("he");
@@ -24,7 +26,7 @@ export default async function Home() {
       <p className="sub">{t("home.subtitle")}</p>
       <div className="card">
         {(["home.point1", "home.point2", "home.point3"] as const).map((k) => (
-          <div key={k} className="step"><span className="dot dot-done">✓</span>{t(k)}</div>
+          <div key={k} className="step"><IconTile n={HOME_ICONS[k]} size={32} />{t(k)}</div>
         ))}
       </div>
       <Link className="btn btn-primary" href="/login">{t("home.cta")}</Link>

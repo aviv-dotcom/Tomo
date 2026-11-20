@@ -5,6 +5,7 @@ import { fmtDate, fmtTime, localDate } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
 import { removeTimeOff } from "../actions";
 import { TimeOffForm } from "./TimeOffForm";
+import { Back, Empty, Icon, IconTile } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -26,17 +27,17 @@ export default async function TimeOffPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
+        <Back href={`/b/${slug}/settings`} label={t("set.title")} />
         <h1 className="h1">{t("off.title")}</h1>
         <p className="sub">{t("off.subtitle")}</p>
         <TimeOffForm business={biz.id} slug={slug} today={localDate(tz)} />
-        {offs.length === 0 && <p className="muted">{t("off.empty")}</p>}
+        {offs.length === 0 && <div className="card"><Empty n="sun" text={t("off.empty")} /></div>}
         {offs.map((o) => (
           <section key={o.id} className="card">
-            <div className="row"><span className="grow"><b>{fmtDate(o.starts_at, tz)} – {lastDay(o.ends_at)}</b>{o.note && <span className="muted small">{o.note}</span>}</span>
-              <form action={removeTimeOff}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="slug" value={slug} /><button className="btn btn-secondary btn-small">{t("off.remove")}</button></form></div>
+            <div className="row"><IconTile n="calendarOff" /><span className="grow"><b>{fmtDate(o.starts_at, tz)} – {lastDay(o.ends_at)}</b>{o.note && <span className="muted small">{o.note}</span>}</span>
+              <form action={removeTimeOff}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="slug" value={slug} /><button className="btn btn-secondary btn-small" aria-label={t("off.remove")} title={t("off.remove")}><Icon n="trash" /></button></form></div>
             {(byOff.get(o.id) ?? []).length > 0 && (
-              <div className="action"><b className="small">{t("off.conflicts")}</b>
+              <div className="action"><b className="small title-in"><Icon n="alert" size={15} />{t("off.conflicts")}</b>
                 {(byOff.get(o.id) ?? []).map((c) => (
                   <Link key={c.id} href={`/b/${slug}/calendar/s/${c.id}`} className="list-row link-row">
                     <span className="grow"><span>{c.offering}</span><span className="muted small">{fmtDate(c.starts_at, tz)} · {fmtTime(c.starts_at, tz)} · {c.people}</span></span>

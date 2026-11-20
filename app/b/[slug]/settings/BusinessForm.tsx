@@ -2,6 +2,7 @@
 import { useActionState, useState } from "react";
 import { translator } from "@/lib/i18n";
 import { saveCancelHours, updateBusiness, type SettingsState } from "./actions";
+import { Icon, Title } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -11,7 +12,7 @@ export function BusinessForm({ business, name, slug, saved }: { business: string
   const changed = newSlug.trim().toLowerCase() !== slug;
   return (
     <form action={action} className="card" onSubmit={(e) => { if (changed && !confirm(t("set.slug.confirm"))) e.preventDefault(); }}>
-      <h2 className="card-title">{t("set.business")}</h2>
+      <Title n="store">{t("set.business")}</Title>
       <input type="hidden" name="business" value={business} /><input type="hidden" name="old_slug" value={slug} />
       <label className="field"><span className="label">{t("set.name")}</span>
         <input className="input" name="name" defaultValue={name} required minLength={2} maxLength={80} /></label>
@@ -19,9 +20,9 @@ export function BusinessForm({ business, name, slug, saved }: { business: string
         <div className="input input-ltr slug-field" dir="ltr"><span className="muted">/p/</span>
           <input name="slug" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} required minLength={3} maxLength={40}
             pattern="[a-zA-Z0-9][a-zA-Z0-9\-]+" autoCapitalize="off" autoCorrect="off" spellCheck={false} aria-label={t("set.slug")} /></div></label>
-      {changed && <p className="small" style={{ margin: 0, background: "var(--warn-soft)", padding: 10, borderRadius: 10 }}>{t("set.slug.warn")}</p>}
+      {changed && <p className="small row" style={{ margin: 0, background: "var(--warn-soft)", padding: 10, borderRadius: 10, alignItems: "start" }}><Icon n="alert" size={16} /><span>{t("set.slug.warn")}</span></p>}
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      {(state?.ok || saved) && !pending && <p className="muted small" role="status">✓ {t("set.saved")}</p>}
+      {(state?.ok || saved) && !pending && <p className="muted small" role="status"><Icon n="check" size={15} />{t("set.saved")}</p>}
       <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("set.saving") : t("set.save")}</button>
     </form>
   );
@@ -31,7 +32,7 @@ export function PolicyForm({ business, slug, hours }: { business: string; slug: 
   const [state, action, pending] = useActionState<SettingsState, FormData>(saveCancelHours, null);
   return (
     <form action={action} className="card">
-      <h2 className="card-title">{t("policy.title")}</h2>
+      <Title n="undo">{t("policy.title")}</Title>
       <input type="hidden" name="business" value={business} /><input type="hidden" name="slug" value={slug} />
       <label className="row small" style={{ flexWrap: "wrap" }}>{t("policy.hours")}
         <select className="input" name="hours" defaultValue={String(hours)} style={{ minHeight: 40 }} aria-label={t("policy.hours")}>
@@ -40,7 +41,7 @@ export function PolicyForm({ business, slug, hours }: { business: string; slug: 
         </select>
         {t("policy.hours.unit")}</label>
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      {state?.ok && !pending && <p className="muted small" role="status">✓ {t("set.saved")}</p>}
+      {state?.ok && !pending && <p className="muted small" role="status"><Icon n="check" size={15} />{t("set.saved")}</p>}
       <button className="btn btn-secondary btn-small" disabled={pending}>{t("policy.save")}</button>
     </form>
   );

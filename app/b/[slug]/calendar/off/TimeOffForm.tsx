@@ -2,6 +2,8 @@
 import { useActionState } from "react";
 import { translator } from "@/lib/i18n";
 import { addTimeOff, type FormState } from "../actions";
+import { Icon } from "@/components/Icon";
+import { DateSelect } from "@/components/DateSelect";
 
 const t = translator("he");
 
@@ -11,12 +13,12 @@ export function TimeOffForm({ business, slug, today }: { business: string; slug:
     <form action={action} className="card">
       <input type="hidden" name="business" value={business} /><input type="hidden" name="slug" value={slug} />
       <div className="kpis">
-        <label className="field"><span className="label">{t("off.from")}</span><input className="input input-ltr" type="date" name="from" min={today} required /></label>
-        <label className="field"><span className="label">{t("off.to")}</span><input className="input input-ltr" type="date" name="to" min={today} required /></label>
+        <label className="field"><span className="label">{t("off.from")}</span><DateSelect name="from" from={today} label={t("off.from")} /></label>
+        <label className="field"><span className="label">{t("off.to")}</span><DateSelect name="to" from={today} label={t("off.to")} /></label>
       </div>
       <input className="input" name="note" maxLength={80} placeholder={t("off.note")} aria-label={t("off.note")} />
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("off.adding") : t("off.add")}</button>
+      <button className="btn btn-primary btn-small" disabled={pending}><Icon n="plus" />{pending ? t("off.adding") : t("off.add")}</button>
     </form>
   );
 }

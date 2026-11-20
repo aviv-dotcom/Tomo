@@ -3,6 +3,7 @@ import { requireBusiness } from "@/lib/biz";
 import { translator } from "@/lib/i18n";
 import { OwnerNav } from "@/components/OwnerNav";
 import { SiteForm } from "./SiteForm";
+import { Back } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -14,7 +15,7 @@ export default async function SitePage({ params }: { params: Promise<{ slug: str
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
+        <Back href={`/b/${slug}/settings`} label={t("set.title")} />
         <h1 className="h1">{t("site.title")}</h1>
         <p className="sub">{t("site.subtitle")}</p>
         <SiteForm business={biz.id} slug={slug} page={data ?? { published: false, tagline: null, about: null, whatsapp: null, address: null }} />

@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { OwnerNav } from "@/components/OwnerNav";
 import { BusinessForm, PolicyForm } from "./BusinessForm";
+import { Icon, IconTile, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -20,10 +21,11 @@ export default async function SettingsPage({ params, searchParams }: { params: P
     sb.from("offerings").select("id", { count: "exact", head: true }).eq("business_id", biz.id).eq("active", true),
   ]);
   const { data: { user } } = await sb.auth.getUser();
-  const row = (href: string, title: MessageKey, hint: MessageKey, tag?: React.ReactNode) => (
+  const row = (icon: IconName, href: string, title: MessageKey, hint: MessageKey, tag?: React.ReactNode) => (
     <Link className="list-row link-row" href={`/b/${slug}/${href}`}>
+      <IconTile n={icon} />
       <span className="grow"><span>{t(title)}</span><span className="muted small">{hint ? t(hint) : null}</span></span>
-      {tag}<span className="chev">‹</span>
+      {tag}<Icon n="chev" className="chev" />
     </Link>
   );
   const onOff = (on: boolean) => <span className={`tag ${on ? "tag-good" : ""}`}>{on ? t("set.on") : t("set.off")}</span>;
@@ -33,26 +35,26 @@ export default async function SettingsPage({ params, searchParams }: { params: P
         <h1 className="h1">{t("set.title")}</h1>
         <BusinessForm business={biz.id} name={biz.name} slug={biz.slug} saved={saved === "1"} />
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 4 }}>{t("set.schedule")}</h2>
-          {row("calendar/hours", "hours.title", "set.hours.hint", !hours ? <span className="tag tag-warn">!</span> : undefined)}
-          {row("calendar/off", "off.title", "set.off.hint")}
+          <Title n="calendar" style={{ marginBottom: 4 }}>{t("set.schedule")}</Title>
+          {row("clock", "calendar/hours", "hours.title", "set.hours.hint", !hours ? <span className="tag tag-warn">!</span> : undefined)}
+          {row("calendarOff", "calendar/off", "off.title", "set.off.hint")}
         </section>
         <PolicyForm business={biz.id} slug={slug} hours={b?.cancel_hours ?? 12} />
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 4 }}>{t("set.offer")}</h2>
-          {row("services", "svc.title", "set.services.hint", <span className="muted small">{offerings ?? 0}</span>)}
-          {row("site", "site.title", "set.site.hint", onOff(!!page?.published))}
+          <Title n="store" style={{ marginBottom: 4 }}>{t("set.offer")}</Title>
+          {row("tag", "services", "svc.title", "set.services.hint", <span className="muted small">{offerings ?? 0}</span>)}
+          {row("globe", "site", "site.title", "set.site.hint", onOff(!!page?.published))}
         </section>
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 4 }}>{t("set.clients")}</h2>
-          {row("automations", "auto.title", "set.auto.hint")}
-          {row("forms", "forms.title", "set.forms.hint", onOff(!!form?.enabled))}
-          <div className="list-row"><span className="grow"><span>{t("set.pay")}</span></span><span className="tag">{t("today.soon")}</span></div>
+          <Title n="chat" style={{ marginBottom: 4 }}>{t("set.clients")}</Title>
+          {row("zap", "automations", "auto.title", "set.auto.hint")}
+          {row("clipboard", "forms", "forms.title", "set.forms.hint", onOff(!!form?.enabled))}
+          <div className="list-row"><IconTile n="card" tone="plain" /><span className="grow"><span>{t("set.pay")}</span></span><span className="tag">{t("today.soon")}</span></div>
         </section>
         <section className="card">
-          <h2 className="card-title">{t("set.account")}</h2>
-          <div className="row"><span className="grow muted small input-ltr" style={{ textAlign: "start" }}>{user?.email}</span>
-            <form action="/auth/signout" method="post"><button className="btn btn-secondary btn-small">{t("nav.signout")}</button></form></div>
+          <Title n="user">{t("set.account")}</Title>
+          <div className="row"><IconTile n="mail" tone="plain" /><span className="grow muted small input-ltr" style={{ textAlign: "start" }}>{user?.email}</span>
+            <form action="/auth/signout" method="post"><button className="btn btn-secondary btn-small"><Icon n="logout" />{t("nav.signout")}</button></form></div>
         </section>
       </main>
       <OwnerNav slug={slug} active="more" />

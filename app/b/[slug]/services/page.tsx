@@ -3,6 +3,7 @@ import { requireBusiness } from "@/lib/biz";
 import { translator } from "@/lib/i18n";
 import { OwnerNav } from "@/components/OwnerNav";
 import { OfferingForm, type Offering } from "./OfferingForm";
+import { Back } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -16,7 +17,7 @@ export default async function ServicesPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/settings`} className="muted small">→ {t("set.title")}</Link>
+        <Back href={`/b/${slug}/settings`} label={t("set.title")} />
         <h1 className="h1">{t("svc.title")}</h1>
         <p className="sub">{t("svc.subtitle")}</p>
         <section className="card" style={{ gap: 0 }}>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
+import { Icon, IconTile } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -27,15 +28,17 @@ export function LoginForm({ failed }: { failed: boolean }) {
   if (sent) {
     return (
       <main className="page" style={{ paddingTop: 56 }}>
+        <IconTile n="mail" size={56} />
         <h1 className="h1">{t("login.sent.title")}</h1>
         <p className="sub">{t("login.sent.body")}</p>
         <p className="muted input-ltr" style={{ textAlign: "start" }}>{email}</p>
-        <button className="btn btn-secondary" onClick={() => setSent(false)}>{t("login.again")}</button>
+        <button className="btn btn-secondary" onClick={() => setSent(false)}><Icon n="repeat" />{t("login.again")}</button>
       </main>
     );
   }
   return (
     <main className="page" style={{ paddingTop: 56 }}>
+      <span className="hero-mark" style={{ margin: 0 }} aria-hidden="true">T</span>
       <h1 className="h1">{t("login.title")}</h1>
       <p className="sub">{t("login.subtitle")}</p>
       <form onSubmit={send} className="card">
@@ -45,7 +48,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
             value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         {error && <p className="error" role="alert">{t(error)}</p>}
-        <button className="btn btn-primary" disabled={busy}>{busy ? t("login.sending") : t("login.send")}</button>
+        <button className="btn btn-primary" disabled={busy}><Icon n="send" />{busy ? t("login.sending") : t("login.send")}</button>
       </form>
     </main>
   );

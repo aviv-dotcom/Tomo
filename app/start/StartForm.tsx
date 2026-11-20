@@ -5,6 +5,7 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { templates } from "@/lib/templates";
 import { shekels, suggestSlug } from "@/lib/format";
 import { createBusiness, type StartState } from "./actions";
+import { Icon, IconTile } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -38,7 +39,7 @@ export function StartForm() {
             {templates.map((x) => (
               <label key={x.key} className="tile">
                 <input type="radio" name="template" value={x.key} checked={key === x.key} onChange={() => setKey(x.key)} />
-                <span className="tile-emoji" aria-hidden="true">{x.emoji}</span>
+                <IconTile n={x.icon} />
                 <b>{t(`template.${x.key}.name` as MessageKey)}</b>
                 <span className="muted small">{t(`template.${x.key}.desc` as MessageKey)}</span>
               </label>
@@ -57,7 +58,7 @@ export function StartForm() {
           </div>
         )}
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-        <button className="btn btn-primary" disabled={pending}>{pending ? t("start.submitting") : t("start.submit")}</button>
+        <button className="btn btn-primary" disabled={pending}>{pending ? t("start.submitting") : t("start.submit")}<Icon n="chev" /></button>
       </form>
     </main>
   );

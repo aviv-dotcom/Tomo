@@ -5,6 +5,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtDate, fmtTime, weekday } from "@/lib/time";
 import { clientAlternatives, clientMove, type MState } from "../actions";
+import { Back, Icon, Title } from "@/components/Icon";
 
 const t = translator("he");
 type ClassAlt = { id: string; starts_at: string; location: string | null; left: number };
@@ -20,11 +21,11 @@ export function MoveFlow({ token, name, delivery, timezone, today }: { token: st
   useEffect(() => { setPick(""); start(async () => setOptions(await clientAlternatives(token, appointment ? day : null))); }, [token, appointment, day]);
   return (
     <main className="page" style={{ paddingBottom: 40 }}>
-      <Link href={`/m/${token}`} className="muted small">→ {t("back")}</Link>
+      <Back href={`/m/${token}`} label={t("back")} />
       <h1 className="h1">{t("move.title")}</h1>
-      <div className="card"><b>{name}</b></div>
+      <div className="card"><b className="title-in"><Icon n="calendar" className="title-icon" />{name}</b></div>
       <section className="card">
-        <h2 className="card-title">{t("move.pick")}</h2>
+        <Title n="clock">{t("move.pick")}</Title>
         {appointment && (
           <div className="days days-scroll">
             {days.map((d) => (
@@ -52,7 +53,7 @@ export function MoveFlow({ token, name, delivery, timezone, today }: { token: st
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name={appointment ? "slot" : "session"} value={pick} />
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-        <button className="btn btn-primary" style={{ width: "100%" }} disabled={!pick || pending}>{pending ? t("move.saving") : t("move.save")}</button>
+        <button className="btn btn-primary" style={{ width: "100%" }} disabled={!pick || pending}><Icon n="check" />{pending ? t("move.saving") : t("move.save")}</button>
       </form>
     </main>
   );

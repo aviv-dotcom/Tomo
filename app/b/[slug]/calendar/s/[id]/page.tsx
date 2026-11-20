@@ -9,6 +9,7 @@ import { bookingAction } from "../../actions";
 import { AddToSession } from "./AddToSession";
 import { CancelSession } from "./CancelSession";
 import { StopSeries } from "./StopSeries";
+import { Avatar, Back, Empty, Icon, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -30,30 +31,30 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
   const { data: people } = isClass ? await sb.rpc("list_people", { p_business: biz.id }) : { data: [] };
   const taken = new Set(s.bookings.map((b) => b.person_id));
   const candidates = ((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => !taken.has(p.id) && p.status !== "left");
-  const op = (b: { id: string }, value: string, label: string, primary = false) => (
+  const op = (b: { id: string }, value: string, label: string, icon: IconName, primary = false) => (
     <form action={bookingAction}>
       <input type="hidden" name="booking" value={b.id} /><input type="hidden" name="op" value={value} />
       <input type="hidden" name="slug" value={slug} /><input type="hidden" name="session" value={s.id} />
-      <button className={`btn btn-small ${primary ? "btn-primary" : "btn-secondary"}`}>{label}</button>
+      <button className={`btn btn-small ${primary ? "btn-primary" : "btn-secondary"}`}><Icon n={icon} />{label}</button>
     </form>
   );
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/calendar?d=${localDate(tz, new Date(s.starts_at))}`} className="muted small">→ {t("back")}</Link>
+        <Back href={`/b/${slug}/calendar?d=${localDate(tz, new Date(s.starts_at))}`} label={t("cal.title")} />
         <h1 className="h1">{s.offering.name}</h1>
-        <p className="sub">{fmtDate(s.starts_at, tz)} · <bdi dir="ltr">{fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}</bdi>{s.location ? ` · ${s.location}` : ""}</p>
+        <div className="row" style={{ flexWrap: "wrap", gap: 14 }}><span className="meta"><Icon n="calendar" size={16} />{fmtDate(s.starts_at, tz)}</span><span className="meta"><Icon n="clock" size={16} /><bdi dir="ltr">{fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}</bdi></span>{s.location && <span className="meta"><Icon n="pin" size={16} />{s.location}</span>}{s.status === "cancelled" && <span className="tag tag-warn">{t("session.cancelled")}</span>}</div>
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 6 }}>{t("session.participants")}{isClass && <span className="muted small">{booked}/{s.capacity}</span>}</h2>
-          {s.bookings.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("session.empty")}</p>}
+          <Title n="users" style={{ marginBottom: 6 }} extra={isClass ? <span className="muted small">{booked}/{s.capacity}</span> : undefined}>{t("session.participants")}</Title>
+          {s.bookings.length === 0 && <Empty n="users" text={t("session.empty")} />}
           {s.bookings.map((b) => (
             <div key={b.id} className="list-row" style={{ flexWrap: "wrap" }}>
-              <Link href={`/b/${slug}/people/${b.person_id}`} className="grow" style={{ color: "inherit" }}>{b.name}</Link>
+              <Avatar name={b.name} size={32} /><Link href={`/b/${slug}/people/${b.person_id}`} className="grow" style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{b.name}</Link>
               <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span>
               <div className="row" style={{ width: "100%", gap: 6 }}>
-                {b.status === "booked" && <>{op(b, "attended", t("session.attended"), true)}{op(b, "no_show", t("session.noshow"))}</>}
-                {(b.status === "attended" || b.status === "no_show") && op(b, "booked", t("session.undo"))}
-                {(b.status === "booked" || b.status === "waitlist") && op(b, "cancel", t("session.cancel"))}
+                {b.status === "booked" && <>{op(b, "attended", t("session.attended"), "check", true)}{op(b, "no_show", t("session.noshow"), "ban")}</>}
+                {(b.status === "attended" || b.status === "no_show") && op(b, "booked", t("session.undo"), "undo")}
+                {(b.status === "booked" || b.status === "waitlist") && op(b, "cancel", t("session.cancel"), "x")}
               </div>
             </div>
           ))}

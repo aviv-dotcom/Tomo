@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/Icon";
 /**
  * A template is configuration, not code. Its Hebrew names and sample offerings are starting data copied into the
  * business on setup (the owner edits them later), so they live here rather than in the message file.
@@ -12,7 +13,7 @@ export type TemplateKey = "fitness" | "beauty" | "tutor" | "custom";
 
 export type Template = {
   key: TemplateKey;
-  emoji: string;
+  icon: IconName;
   vocabulary: { client: string; clients: string; session: string };
   modules: ModuleKey[];
   sampleOfferings: { name: string; delivery: Delivery; billing: Billing; minutes?: number; priceAgorot: number; depositAgorot?: number }[];
@@ -22,7 +23,7 @@ export type Template = {
 export const templates: Template[] = [
   {
     key: "fitness",
-    emoji: "🏃",
+    icon: "zap",
     vocabulary: { client: "מתאמן", clients: "מתאמנים", session: "אימון" },
     modules: ["workout_plans", "habits"],
     sampleOfferings: [
@@ -34,7 +35,7 @@ export const templates: Template[] = [
   },
   {
     key: "beauty",
-    emoji: "💅",
+    icon: "sparkles",
     vocabulary: { client: "לקוחה", clients: "לקוחות", session: "טיפול" },
     modules: ["formula", "before_after"],
     sampleOfferings: [
@@ -46,7 +47,7 @@ export const templates: Template[] = [
   },
   {
     key: "tutor",
-    emoji: "📚",
+    icon: "list",
     vocabulary: { client: "תלמיד", clients: "תלמידים", session: "שיעור" },
     modules: ["lesson_notes", "family"],
     sampleOfferings: [
@@ -57,7 +58,7 @@ export const templates: Template[] = [
   },
   {
     key: "custom",
-    emoji: "✦",
+    icon: "store",
     vocabulary: { client: "לקוח", clients: "לקוחות", session: "פגישה" },
     modules: [],
     sampleOfferings: [],

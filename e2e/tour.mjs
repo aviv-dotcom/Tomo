@@ -51,6 +51,10 @@ await rpc("add_charge", { p_business: b, p_person: ppl[1], p_description: "מנ�
 await rpc("add_charge", { p_business: b, p_person: ppl[2], p_description: "כרטיסייה 10", p_amount_agorot: 60000 });
 await rpc("record_payment", { p_business: b, p_person: ppl[2], p_amount_agorot: 60000, p_method: "transfer", p_note: null });
 await rpc("cancel_session", { p_session: sess[2].id, p_reason: "חג" }).catch(() => {});
+const { data: bk } = await sb.from("bookings").select("manage_token").eq("session_id", sess[1].id).limit(1);
+const token = bk[0].manage_token;
+const slug2 = slug + "-new";
+await rpc("create_business", { p_name: "עסק חדש לגמרי", p_slug: slug2, p_template: "custom" });
 console.log("seeded", slug);
 
 const shots = [
@@ -58,10 +62,10 @@ const shots = [
   ["05-session", `/b/${slug}/calendar/s/${sess[0].id}`], ["06-new-appt", `/b/${slug}/calendar/new?d=${tomorrow}`], ["07-class", `/b/${slug}/calendar/class`],
   ["08-hours", `/b/${slug}/calendar/hours`], ["09-off", `/b/${slug}/calendar/off`], ["10-money", `/b/${slug}/money`], ["11-services", `/b/${slug}/services`],
   ["12-site", `/b/${slug}/site`], ["13-inbox", `/b/${slug}/inbox`], ["14-automations", `/b/${slug}/automations`], ["15-forms", `/b/${slug}/forms`],
-  ["16-public", `/p/${slug}`], ["17-public-book", `/p/${slug}/book?o=${offs["אימון אישי"]}`], ["21-settings", `/b/${slug}/settings`], ["18-start", `/start`], ["19-home-anon", `/`], ["20-login", `/login`],
+  ["16-public", `/p/${slug}`], ["17-public-book", `/p/${slug}/book?o=${offs["אימון אישי"]}`], ["21-settings", `/b/${slug}/settings`], ["22-client-link", `/m/${token}`], ["23-client-move", `/m/${token}/move`], ["24-client-form", `/m/${token}/form`], ["25-404", `/b/no-such-place`], ["26-today-empty", `/b/${slug2}`], ["27-people-add", `/b/${slug}/people?add=1`], ["18-start", `/start`], ["19-home-anon", `/`], ["20-login", `/login`],
 ];
 const browser = await chromium.launch();
-for (const [w, h, tag] of [[390, 844, "m"], [1280, 800, "d"]]) {
+for (const [w, h, tag] of [[360, 780, "m"], [1280, 800, "d"]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, locale: "he-IL", timezoneId: "Asia/Jerusalem" });
   await ctx.addCookies(jar.map((c) => ({ name: c.name, value: c.value, domain: new URL(SITE).hostname, path: "/", secure: SITE.startsWith("https"), sameSite: "Lax" })));
   const page = await ctx.newPage();

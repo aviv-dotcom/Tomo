@@ -3,6 +3,7 @@ import { useActionState } from "react";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { savePerson, type SaveState } from "./actions";
+import { Icon } from "@/components/Icon";
 
 const t = translator("he");
 type P = { id: string; name: string; phone: string | null; email: string | null; status: string; marketing_consent: boolean };
@@ -11,7 +12,7 @@ export function PersonForm({ p, slug }: { p: P; slug: string }) {
   const [state, action, pending] = useActionState<SaveState, FormData>(savePerson, null);
   return (
     <details className="card fold-card" open={!!state?.error}>
-      <summary className="card-title">{t("card.details")}<span className="chev">‹</span></summary>
+      <summary className="card-title"><span className="title-in"><Icon n="edit" className="title-icon" />{t("card.details")}</span><Icon n="chev" className="chev" /></summary>
       <form action={action} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
       <input type="hidden" name="id" value={p.id} /><input type="hidden" name="slug" value={slug} />
       <label className="field"><span className="label">{t("card.name")}</span><input className="input" name="name" defaultValue={p.name} required minLength={2} maxLength={80} /></label>
@@ -24,7 +25,7 @@ export function PersonForm({ p, slug }: { p: P; slug: string }) {
       </label>
       <label className="check"><input type="checkbox" name="marketing" defaultChecked={p.marketing_consent} /> {t("card.marketing")}</label>
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-      {state?.ok && !pending && <p className="muted small" role="status">✓ {t("card.saved")}</p>}
+      {state?.ok && !pending && <p className="muted small" role="status"><Icon n="check" size={15} />{t("card.saved")}</p>}
       <button className="btn btn-primary btn-small" disabled={pending}>{pending ? t("card.saving") : t("card.save")}</button>
       </form>
     </details>

@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { OwnerNav } from "@/components/OwnerNav";
 import { AddPerson } from "../AddPerson";
+import { Avatar, Empty, Icon, Title } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -21,10 +22,11 @@ export default async function PeoplePage({ params, searchParams }: { params: Pro
     <>
       <main className="page">
         <details className="adder" open={add === "1"}>
-          <summary className="top"><h1 className="h1">{t("people.title")}</h1><span className="btn btn-primary btn-small">{t("people.add")}</span></summary>
-          <section className="card" style={{ marginTop: 12 }}><h2 className="card-title">{t("people.add.title")}</h2><AddPerson business={biz.id} slug={slug} /></section>
+          <summary className="top"><h1 className="h1">{t("people.title")}</h1><span className="btn btn-primary btn-small"><Icon n="userPlus" />{t("people.add.title")}</span></summary>
+          <section className="card" style={{ marginTop: 12 }}><Title n="userPlus">{t("people.add.title")}</Title><AddPerson business={biz.id} slug={slug} /></section>
         </details>
-        <form className="row" action={`/b/${slug}/people`}>
+        <form className="row search" action={`/b/${slug}/people`}>
+          <Icon n="search" className="search-icon" />
           {status && <input type="hidden" name="s" value={status} />}
           <input className="input" style={{ flex: 1 }} name="q" defaultValue={q} placeholder={t("people.search")} aria-label={t("people.search")} />
         </form>
@@ -33,9 +35,10 @@ export default async function PeoplePage({ params, searchParams }: { params: Pro
           {STATUSES.map((st) => <Link key={st} className={`chip ${status === st ? "chip-on" : ""}`} href={href(st)}>{t(`status.${st}` as MessageKey)}</Link>)}
         </div>
         <section className="card" style={{ gap: 0 }}>
-          {people.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("people.empty")}</p>}
+          {people.length === 0 && <Empty n="users" text={t("people.empty")} />}
           {people.map((p) => (
             <Link key={p.id} href={`/b/${slug}/people/${p.id}`} className="list-row link-row">
+              <Avatar name={p.name} />
               <span className="grow"><span>{p.name}</span>{p.phone && <span className="muted small input-ltr" style={{ textAlign: "start" }}>{p.phone}</span>}</span>
               <span className={`tag ${p.status === "active" ? "tag-good" : "tag-warn"}`}>{t(`status.${p.status}` as MessageKey)}</span>
             </Link>

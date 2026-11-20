@@ -10,6 +10,7 @@ import { ForgetButton } from "./ForgetButton";
 import { ChargeForm, PaymentForm } from "./MoneyForms";
 import { voidCharge } from "../../money/actions";
 import { shekels, whatsappLink } from "@/lib/format";
+import { Avatar, Back, Empty, Icon, IconTile, Title } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -32,22 +33,22 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <main className="page">
-        <Link href={`/b/${slug}/people`} className="muted small">→ {t("back")}</Link>
-        <div className="top"><div className="grow"><h1 className="h1">{p.name}</h1>
+        <Back href={`/b/${slug}/people`} label={t("back")} />
+        <div className="top"><Avatar name={p.name} size={52} /><div className="grow"><h1 className="h1">{p.name}</h1>
           <span className="small"><span className={`tag ${p.status === "active" ? "tag-good" : "tag-warn"}`}>{t(`status.${p.status}` as MessageKey)}</span>
             {p.phone && <span className="muted input-ltr" dir="ltr" style={{ marginInlineStart: 8 }}>{p.phone}</span>}</span></div></div>
-        <div className="row">
-          <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?person=${p.id}`}>{t("card.book")}</Link>
-          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={whatsappLink(p.phone)} target="_blank" rel="noopener">{t("card.whatsapp")}</a>}
-          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`tel:${p.phone}`}>{t("card.call")}</a>}
+        <div className="row btn-row">
+          <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?person=${p.id}`}><Icon n="calendarPlus" />{t("card.book")}</Link>
+          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={whatsappLink(p.phone)} target="_blank" rel="noopener"><Icon n="chat" />{t("card.whatsapp")}</a>}
+          {p.phone && <a className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`tel:${p.phone}`}><Icon n="phone" />{t("card.call")}</a>}
         </div>
         <div className="kpis">
-          <div className="kpi"><span className="muted small">{t("card.visits")}</span><b>{p.visits}</b></div>
-          <div className="kpi"><span className="muted small">{t("card.noshows")}</span><b>{p.no_shows}</b></div>
+          <div className="kpi"><span className="kpi-label"><Icon n="check" size={15} />{t("card.visits")}</span><b>{p.visits}</b></div>
+          <div className="kpi"><span className="kpi-label"><Icon n="ban" size={15} />{t("card.noshows")}</span><b>{p.no_shows}</b></div>
         </div>
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 6 }}>{t("card.history")}</h2>
-          {p.bookings.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("card.history.empty")}</p>}
+          <Title n="calendar" style={{ marginBottom: 6 }}>{t("card.history")}</Title>
+          {p.bookings.length === 0 && <Empty n="calendar" text={t("card.history.empty")} />}
           {p.bookings.map((b) => (
             <Link key={b.id} href={`/b/${slug}/calendar/s/${b.session_id}`} className="list-row link-row">
               <span className="grow"><span>{b.offering}</span><span className="muted small">{fmtDate(b.starts_at, biz.timezone)} · {fmtTime(b.starts_at, biz.timezone)}</span></span>
@@ -56,31 +57,31 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
           ))}
         </section>
         <section className="card" id="money">
-          <h2 className="card-title">{t("money.section")}
-            <span className={`tag ${money.balance > 0 ? "tag-warn" : "tag-good"}`}>{money.balance > 0 ? `${t("money.balance")} ${shekels(money.balance)}` : money.balance < 0 ? `${t("money.credit")} ${shekels(-money.balance)}` : t("money.clear")}</span></h2>
+          <Title n="money" extra={            <span className={`tag ${money.balance > 0 ? "tag-warn" : "tag-good"}`}>{money.balance > 0 ? `${t("money.balance")} ${shekels(money.balance)}` : money.balance < 0 ? `${t("money.credit")} ${shekels(-money.balance)}` : t("money.clear")}</span>}>{t("money.section")}</Title>
           <div className="row" style={{ alignItems: "start", flexWrap: "wrap" }}>
-            <details className="fold" open={money.balance > 0}><summary className="btn btn-secondary btn-small">{t("money.pay.title")}</summary>
+            <details className="fold" open={money.balance > 0}><summary className="btn btn-secondary btn-small"><Icon n="money" />{t("money.pay.title")}</summary>
               <PaymentForm business={biz.id} slug={slug} person={p.id} suggested={money.balance} /></details>
-            <details className="fold"><summary className="btn btn-secondary btn-small">{t("money.charge.title")}</summary>
+            <details className="fold"><summary className="btn btn-secondary btn-small"><Icon n="receipt" />{t("money.charge.title")}</summary>
               <ChargeForm business={biz.id} slug={slug} person={p.id} /></details>
           </div>
           {money.lines.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("money.lines.empty")}</p>}
           <div>
             {money.lines.map((l) => (
               <div key={l.id} className="list-row" style={{ opacity: l.void ? 0.5 : 1 }}>
+                <IconTile n={l.type === "payment" ? (l.method === "refund" ? "undo" : "money") : "receipt"} tone={l.type === "payment" ? "good" : "plain"} size={32} />
                 <span className="grow"><span>{l.type === "payment" ? `${t(`method.${l.method}` as MessageKey)}${l.text !== l.method ? ` · ${l.text}` : ""}` : l.text}</span>
                   <span className="muted small">{fmtDate(l.at, biz.timezone)}{l.void ? ` · ${t("money.voided")}` : ""}</span></span>
                 <span className="price" style={{ color: l.type === "payment" ? "var(--good)" : undefined }}>{l.type === "payment" ? "+" : ""}{shekels(Math.abs(l.amount))}</span>
                 {l.type === "charge" && !l.void && (
                   <form action={voidCharge}><input type="hidden" name="charge" value={l.id} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="person" value={p.id} />
-                    <button className="link-btn" aria-label={t("money.void")} title={t("money.void")}>✕</button></form>
+                    <button className="link-btn" aria-label={t("money.void")} title={t("money.void")}><Icon n="x" size={16} /></button></form>
                 )}
               </div>
             ))}
           </div>
         </section>
         <section className="card">
-          <h2 className="card-title">{t("card.form")}<span className={`tag ${form ? "tag-good" : ""}`}>{form ? `${t("card.form.signed")} ${fmtDate(form.signed_at, biz.timezone)}` : t("card.form.none")}</span></h2>
+          <Title n="clipboard" extra={<span className={`tag ${form ? "tag-good" : ""}`}>{form ? `${t("card.form.signed")} ${fmtDate(form.signed_at, biz.timezone)}` : t("card.form.none")}</span>}>{t("card.form")}</Title>
           {form && form.questions.map((q, i) => (
             <div key={i} className="row small"><span className="grow">{q}</span><b style={{ color: form.answers[i] ? "var(--bad)" : undefined }}>{form.answers[i] ? t("form.yes") : t("form.no")}</b></div>
           ))}
@@ -88,9 +89,9 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
         </section>
         <PersonForm p={p} slug={slug} />
         <section className="card">
-          <h2 className="card-title">{t("card.privacy")}</h2>
-          <div className="row">
-            <a className="btn btn-secondary btn-small" href={`/b/${slug}/people/${p.id}/export`}>{t("card.export")}</a>
+          <Title n="shield">{t("card.privacy")}</Title>
+          <div className="row btn-row">
+            <a className="btn btn-secondary btn-small" href={`/b/${slug}/people/${p.id}/export`}><Icon n="download" />{t("card.export")}</a>
             <ForgetButton id={p.id} slug={slug} />
           </div>
         </section>

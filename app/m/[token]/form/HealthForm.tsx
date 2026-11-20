@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { translator } from "@/lib/i18n";
 import { clientSubmitForm, type MState } from "../actions";
+import { Back, Icon, IconTile } from "@/components/Icon";
 
 const t = translator("he");
 
@@ -10,8 +11,8 @@ export function HealthForm({ token, business, questions }: { token: string; busi
   const [state, action, pending] = useActionState<MState, FormData>(clientSubmitForm, null);
   return (
     <main className="page" style={{ paddingBottom: 40 }}>
-      <Link href={`/m/${token}`} className="muted small">→ {t("back")}</Link>
-      <h1 className="h1">{t("form.title")}</h1>
+      <Back href={`/m/${token}`} label={t("back")} />
+      <div className="row"><IconTile n="clipboard" size={44} /><h1 className="h1">{t("form.title")}</h1></div>
       <span className="muted">{business}</span>
       <form action={action} className="card" style={{ gap: 14 }}>
         <input type="hidden" name="token" value={token} /><input type="hidden" name="count" value={questions.length} />
@@ -29,7 +30,7 @@ export function HealthForm({ token, business, questions }: { token: string; busi
         <label className="check"><input type="checkbox" name="confirm" required /> {t("form.confirm")}</label>
         <p className="muted small" style={{ margin: 0 }}>{t("form.private")}</p>
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
-        <button className="btn btn-primary" disabled={pending}>{pending ? t("form.sending") : t("form.submit")}</button>
+        <button className="btn btn-primary" disabled={pending}><Icon n="check" />{pending ? t("form.sending") : t("form.submit")}</button>
       </form>
     </main>
   );

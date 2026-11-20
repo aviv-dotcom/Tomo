@@ -5,6 +5,7 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels, whatsappLink } from "@/lib/format";
 import { fmtDate } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
+import { Avatar, Empty, Icon, IconTile, Title } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -25,26 +26,28 @@ export default async function MoneyPage({ params }: { params: Promise<{ slug: st
       <main className="page">
         <h1 className="h1">{t("money.title")}</h1>
         <div className="kpis">
-          <div className="kpi"><span className="muted small">{t("money.collected")}</span><b>{shekels(m.collected_month)}</b></div>
-          <div className="kpi"><span className="muted small">{t("money.debt")}</span><b>{shekels(debt)}</b></div>
+          <div className="kpi"><span className="kpi-label"><Icon n="trend" size={15} />{t("money.collected")}</span><b>{shekels(m.collected_month)}</b></div>
+          <div className="kpi"><span className="kpi-label"><Icon n="alert" size={15} />{t("money.debt")}</span><b>{shekels(debt)}</b></div>
         </div>
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 6 }}>{t("money.debtors")}</h2>
-          {m.debtors.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("money.nodebt")}</p>}
+          <Title n="alert" style={{ marginBottom: 6 }}>{t("money.debtors")}</Title>
+          {m.debtors.length === 0 && <Empty n="check" text={t("money.nodebt")} />}
           {m.debtors.map((d) => (
             <div key={d.id} className="list-row">
+              <Avatar name={d.name} size={34} />
               <Link href={`/b/${slug}/people/${d.id}#money`} className="grow" style={{ color: "inherit", textDecoration: "none" }}>
                 <span>{d.name}</span><span className="price">{shekels(d.balance)}</span></Link>
-              {d.phone && <a className="btn btn-secondary btn-small" href={whatsappLink(d.phone, remind(d.name, d.balance))} target="_blank" rel="noopener noreferrer">{t("money.remind")}</a>}
-              <Link className="btn btn-primary btn-small" href={`/b/${slug}/people/${d.id}#money`}>{t("money.record")}</Link>
+              {d.phone && <a className="btn btn-secondary btn-small" href={whatsappLink(d.phone, remind(d.name, d.balance))} target="_blank" rel="noopener noreferrer" aria-label={t("money.remind")} title={t("money.remind")}><Icon n="chat" /></a>}
+              <Link className="btn btn-primary btn-small" href={`/b/${slug}/people/${d.id}#money`}><Icon n="plus" />{t("money.record")}</Link>
             </div>
           ))}
         </section>
         <section className="card" style={{ gap: 0 }}>
-          <h2 className="card-title" style={{ marginBottom: 6 }}>{t("money.recent")}</h2>
-          {m.recent.length === 0 && <p className="muted" style={{ margin: 0 }}>{t("money.norecent")}</p>}
+          <Title n="receipt" style={{ marginBottom: 6 }}>{t("money.recent")}</Title>
+          {m.recent.length === 0 && <Empty n="money" text={t("money.norecent")} />}
           {m.recent.map((r) => (
             <Link key={r.id} href={`/b/${slug}/people/${r.person_id}#money`} className="list-row link-row">
+              <IconTile n={r.method === "refund" ? "undo" : "money"} tone={r.method === "refund" ? "warn" : "good"} size={34} />
               <span className="grow"><span>{r.name}</span><span className="muted small">{fmtDate(r.paid_at, biz.timezone)} · {t(`method.${r.method}` as MessageKey)}</span></span>
               <span className="price">{shekels(r.amount)}</span>
             </Link>
