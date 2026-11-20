@@ -45,6 +45,7 @@ export function OfferingForm({ business, slug, offering }: { business: string; s
           <select className="input" name="billing" defaultValue={offering?.billing ?? "one_time"}>
             {BILLING.map((b) => <option key={b} value={b}>{t(`billing.${b}` as MessageKey)}</option>)}</select></label>
         <label className="field"><span className="label">{t("svc.price")}</span><input className="input input-ltr" name="price" inputMode="decimal" required defaultValue={offering ? offering.price_agorot / 100 : ""} /></label>
+        {(delivery === "addon" || delivery === "product") && <p className="small row" style={{ margin: 0, background: "var(--accent-soft)", padding: 10, borderRadius: 10, alignItems: "start" }}><Icon n="info" size={16} /><span>{t("svc.addon.hint")}</span></p>}
         {timed && <label className="field"><span className="label">{t("svc.minutes")}</span><input className="input input-ltr" name="minutes" type="number" min={5} max={600} required defaultValue={offering?.minutes ?? 60} /></label>}
         {delivery === "appointment" && <label className="field"><span className="label">{t("svc.deposit")}</span><input className="input input-ltr" name="deposit" inputMode="decimal" defaultValue={offering?.deposit_agorot ? offering.deposit_agorot / 100 : ""} /></label>}
         {delivery === "appointment" && <label className="field"><span className="label">{t("svc.buffer")}</span><input className="input input-ltr" name="buffer" type="number" min={0} max={120} defaultValue={offering?.buffer_minutes ?? 0} /></label>}

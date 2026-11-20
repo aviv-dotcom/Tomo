@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireBusiness } from "@/lib/biz";
+import { shekels } from "@/lib/format";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { fmtDate, fmtTime, localDate } from "@/lib/time";
@@ -30,6 +31,8 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
   const series = (rec as { recurrence_id: string | null; recurrences: { active: boolean } | null } | null);
   const { data: people } = isClass ? await sb.rpc("list_people", { p_business: biz.id }) : { data: [] };
   const taken = new Set(s.bookings.map((b) => b.person_id));
+  const { data: addonRows } = s.bookings.length ? await sb.from("booking_addons").select("booking_id, name, price_agorot").in("booking_id", s.bookings.map((b) => b.id)) : { data: [] };
+  const addonsOf = (id: string) => ((addonRows ?? []) as { booking_id: string; name: string; price_agorot: number }[]).filter((a) => a.booking_id === id);
   const candidates = ((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => !taken.has(p.id) && p.status !== "left");
   const op = (b: { id: string }, value: string, label: string, icon: IconName, primary = false) => (
     <form action={bookingAction}>
@@ -51,6 +54,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
             <div key={b.id} className="list-row" style={{ flexWrap: "wrap" }}>
               <Avatar name={b.name} size={32} /><Link href={`/b/${slug}/people/${b.person_id}`} className="grow" style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{b.name}</Link>
               <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span>
+              {addonsOf(b.id).length > 0 && <span className="muted small row" style={{ width: "100%", gap: 6 }}><Icon n="plus" size={14} />{t("session.addons")}: {addonsOf(b.id).map((a) => `${a.name} (${shekels(a.price_agorot)})`).join(", ")}</span>}
               <div className="row" style={{ width: "100%", gap: 6 }}>
                 {b.status === "booked" && <>{op(b, "attended", t("session.attended"), "check", true)}{op(b, "no_show", t("session.noshow"), "ban")}</>}
                 {(b.status === "attended" || b.status === "no_show") && op(b, "booked", t("session.undo"), "undo")}

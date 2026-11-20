@@ -7,15 +7,18 @@ import { addDays, dayNum, fmtTime, weekday } from "@/lib/time";
 import { TimeSelect } from "@/components/TimeSelect";
 import { DateSelect } from "@/components/DateSelect";
 import { bookAppointment, getSlots, type FormState } from "../actions";
+import type { Addon } from "@/components/PublicPageView";
+import { shekels } from "@/lib/format";
 import { Back, Icon } from "@/components/Icon";
 
 const t = translator("he");
 type Props = { biz: { id: string; timezone: string }; slug: string; date: string; today: string; hasHours: boolean; openDays: number[]; person: string;
-  offerings: { id: string; name: string; minutes: number | null }[]; people: { id: string; name: string }[] };
+  offerings: { id: string; name: string; minutes: number | null }[]; addons: Addon[]; people: { id: string; name: string }[] };
 
-export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, person, offerings, people }: Props) {
+export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, person, offerings, addons, people }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(bookAppointment, null);
   const [offering, setOffering] = useState(offerings[0]?.id ?? "");
+  const [picked, setPicked] = useState<string[]>([]);
   const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[] | null>(null);
   const [slot, setSlot] = useState("");
@@ -27,8 +30,8 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
   useEffect(() => {
     if (!offering || !date) return;
     setSlot("");
-    startLoading(async () => setSlots(await getSlots(biz.id, offering, date)));
-  }, [biz.id, offering, date]);
+    startLoading(async () => setSlots(await getSlots(biz.id, offering, date, picked)));
+  }, [biz.id, offering, date, picked]);
 
   return (
     <main className="page">
@@ -37,10 +40,22 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
       {offerings.length === 0 ? <p className="muted">{t("appt.no_services")}</p> : people.length === 0 ? <p className="muted">{t("appt.no_people")}</p> : (
         <form action={action} className="card" style={{ gap: 14 }}>
           <input type="hidden" name="business" value={biz.id} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="slot" value={slot} />
+          {picked.map((id) => <input key={id} type="hidden" name="addon" value={id} />)}
           <label className="field"><span className="label">{t("appt.service")}</span>
             <select className="input" name="offering" value={offering} onChange={(e) => setOffering(e.target.value)}>
               {offerings.map((o) => <option key={o.id} value={o.id}>{o.name}{o.minutes ? ` · ${o.minutes} ${t("minutes")}` : ""}</option>)}
             </select></label>
+          {addons.length > 0 && (
+            <div className="field"><span className="label">{t("appt.addons")}</span>
+              {addons.map((a) => (
+                <label key={a.id} className={`addon ${picked.includes(a.id) ? "addon-on" : ""}`}>
+                  <input type="checkbox" checked={picked.includes(a.id)} onChange={(e) => setPicked((p) => e.target.checked ? [...p, a.id] : p.filter((x) => x !== a.id))} />
+                  <span className="grow"><span>{a.name}</span>{a.delivery === "addon" && a.minutes ? <span className="muted small">+{a.minutes} {t("minutes")}</span> : null}</span>
+                  <span className="price">+{shekels(a.priceAgorot)}</span>
+                </label>
+              ))}
+            </div>
+          )}
           <label className="field"><span className="label">{t("appt.person")}</span>
             <select className="input" name="person" defaultValue={person} required>
               <option value="" disabled>{t("appt.person.choose")}</option>

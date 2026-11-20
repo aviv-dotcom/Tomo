@@ -111,6 +111,8 @@ begin
     'offerings', coalesce((select jsonb_agg(jsonb_build_object('id', id, 'name', name, 'delivery', delivery, 'billing', billing,
                     'minutes', minutes, 'priceAgorot', price_agorot) order by position)
                   from offerings where business_id = v_id and active and delivery in ('appointment', 'class', 'membership', 'product')), '[]'::jsonb),
+    'addons', coalesce((select jsonb_agg(jsonb_build_object('id', id, 'name', name, 'delivery', delivery, 'minutes', minutes, 'priceAgorot', price_agorot) order by position)
+                  from offerings where business_id = v_id and active and delivery in ('addon', 'product')), '[]'::jsonb),
     'classes', coalesce((select jsonb_agg(jsonb_build_object('id', s.id, 'offering_id', s.offering_id, 'offering', o.name, 'starts_at', s.starts_at,
                     'location', s.location, 'left', greatest(s.capacity - (select count(*) from bookings x where x.session_id = s.id and x.status = 'booked'), 0)) order by s.starts_at)
                   from sessions s join offerings o on o.id = s.offering_id

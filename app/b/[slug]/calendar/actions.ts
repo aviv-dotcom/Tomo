@@ -10,9 +10,9 @@ import type { MessageKey } from "@/lib/i18n/messages";
 export type FormState = { error?: MessageKey; ok?: number } | null;
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
-export async function getSlots(business: string, offering: string, date: string): Promise<string[]> {
+export async function getSlots(business: string, offering: string, date: string, addons: string[] = []): Promise<string[]> {
   const sb = await serverSupabase();
-  const { data } = await sb.rpc("free_slots", { p_business: business, p_offering: offering, p_date: date });
+  const { data } = await sb.rpc("free_slots", { p_business: business, p_offering: offering, p_date: date, p_addons: addons.length ? addons : null });
   return (data ?? []) as string[];
 }
 
@@ -27,7 +27,8 @@ export async function bookAppointment(_p: FormState, f: FormData): Promise<FormS
     startsAt = data as string;
   }
   if (!startsAt) return { error: "appt.slots" as MessageKey };
-  const { error } = await sb.rpc("book_appointment", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"), p_starts_at: startsAt, p_force: force });
+  const { error } = await sb.rpc("book_appointment", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"), p_starts_at: startsAt, p_force: force,
+    p_addons: f.getAll("addon").map(String).filter(Boolean).length ? f.getAll("addon").map(String).filter(Boolean) : null });
   if (error) return { error: errorKey(error.message) };
   redirect(`/b/${slug}/calendar?d=${date}`);
 }

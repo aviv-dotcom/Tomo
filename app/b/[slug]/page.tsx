@@ -3,7 +3,7 @@ import { serverSupabase } from "@/lib/supabase/server";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels } from "@/lib/format";
-import { fmtTime } from "@/lib/time";
+import { addDays, fmtDate, fmtTime } from "@/lib/time";
 import Link from "next/link";
 import { OwnerNav } from "@/components/OwnerNav";
 import { ActionCard } from "@/components/ActionCard";
@@ -42,6 +42,19 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
     sb.from("business_hours").select("weekday", { count: "exact", head: true }).eq("business_id", biz.id),
   ]);
   const published = !!pageRow?.published;
+  // The next days: what is booked, with page bookings from the last two days marked as new.
+  const { data: fromTs } = await sb.rpc("cal_at", { p_business: biz.id, p_date: addDays(d.today, 1), p_min: 0 });
+  const { data: upRows } = await sb.from("bookings").select("source, created_at, people(full_name), sessions!inner(id, starts_at, capacity, offerings(name))")
+    .eq("business_id", biz.id).in("status", ["booked", "waitlist"])
+    .gte("sessions.starts_at", fromTs as string).lt("sessions.starts_at", new Date(new Date(fromTs as string).getTime() + 7 * 864e5).toISOString()).limit(200);
+  type UpRow = { source: string; created_at: string; people: { full_name: string } | null; sessions: { id: string; starts_at: string; capacity: number; offerings: { name: string } | null } };
+  const upcoming = [...((upRows ?? []) as unknown as UpRow[]).reduce((m, r) => {
+    const cur = m.get(r.sessions.id) ?? { id: r.sessions.id, starts_at: r.sessions.starts_at, capacity: r.sessions.capacity, offering: r.sessions.offerings?.name ?? "", people: [] as string[], fresh: false };
+    cur.people.push(r.people?.full_name ?? "");
+    if (r.source === "page" && Date.now() - new Date(r.created_at).getTime() < 48 * 3600e3) cur.fresh = true;
+    return m.set(r.sessions.id, cur);
+  }, new Map<string, { id: string; starts_at: string; capacity: number; offering: string; people: string[]; fresh: boolean }>()).values()]
+    .sort((x, y) => x.starts_at.localeCompare(y.starts_at)).slice(0, 6);
   const steps: { done: boolean; label: MessageKey; href: string; icon: IconName; optional?: boolean }[] = [
     { done: d.counts.offerings > 0, label: "today.setup.offerings", href: "services", icon: "tag" },
     { done: (hoursCount ?? 0) > 0, label: "today.setup.hours", href: "calendar/hours?back=today", icon: "clock" },
@@ -93,6 +106,21 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
               <IconTile n={a.capacity > 1 ? "users" : "user"} size={30} />
               <span className="grow">{a.offering}{a.capacity === 1 && a.people[0] ? ` · ${a.people[0]}` : ""}</span>
               {a.capacity > 1 && <span className="muted small">{a.booked}/{a.capacity}</span>}
+              <Icon n="chev" className="chev" />
+            </Link>
+          ))}
+        </section>
+
+        <section className="card" style={{ gap: 0 }}>
+          <Title n="clock" style={{ marginBottom: 6 }}>{t("today.upcoming")}</Title>
+          {upcoming.length === 0 && <Empty n="calendar" text={t("today.upcoming.empty")} />}
+          {upcoming.map((u) => (
+            <Link key={u.id} href={`/b/${d.business.slug}/calendar/s/${u.id}`} className="list-row link-row">
+              <span className="session-time" style={{ minWidth: 64, display: "flex", flexDirection: "column" }}>
+                <span className="small muted" style={{ fontWeight: 400 }}>{fmtDate(u.starts_at, d.business.timezone)}</span>{fmtTime(u.starts_at, d.business.timezone)}</span>
+              <span className="grow">{u.offering}{u.capacity === 1 && u.people[0] ? ` · ${u.people[0]}` : ""}</span>
+              {u.fresh && <span className="tag tag-good">{t("today.new")}</span>}
+              {u.capacity > 1 && <span className="muted small">{u.people.length}/{u.capacity}</span>}
               <Icon n="chev" className="chev" />
             </Link>
           ))}

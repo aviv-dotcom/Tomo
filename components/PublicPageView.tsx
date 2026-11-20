@@ -8,6 +8,8 @@ import { Icon, IconTile, Title } from "@/components/Icon";
 
 const t = translator("he");
 
+export type Addon = { id: string; name: string; delivery: string; minutes: number | null; priceAgorot: number };
+
 export type PageData = {
   name: string; slug: string; timezone: string; vocabulary?: Record<string, string>;
   tagline: string | null; about: string | null; whatsapp: string | null; address: string | null;
@@ -15,6 +17,7 @@ export type PageData = {
   instagram: string | null; facebook: string | null; tiktok: string | null; website: string | null; sections: string[] | null;
   hours: { weekday: number; start: number; end: number }[];
   offerings: { id: string; name: string; delivery: string; billing: string; minutes: number | null; priceAgorot: number }[];
+  addons?: Addon[];
   classes: { id: string; offering_id: string; offering: string; starts_at: string; location: string | null; left: number }[];
 };
 

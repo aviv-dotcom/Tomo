@@ -6,34 +6,42 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtDate, fmtTime, weekday } from "@/lib/time";
 import { publicBook, publicSlots, type BookState } from "./actions";
 import { Back, Icon, Title } from "@/components/Icon";
+import type { Addon } from "@/components/PublicPageView";
+import { shekels } from "@/lib/format";
 
 const t = translator("he");
-type Props = { slug: string; name: string; timezone: string; today: string;
-  offering: { id: string; name: string; minutes: number | null } | null;
+type Props = { slug: string; name: string; timezone: string; today: string; accent: string | null; addons: Addon[];
+  offering: { id: string; name: string; minutes: number | null; priceAgorot: number } | null;
   session: { id: string; name: string; starts_at: string; location: string | null } | null };
 
-export function BookFlow({ slug, name, timezone, today, offering, session }: Props) {
+export function BookFlow({ slug, name, timezone, today, accent, addons, offering, session }: Props) {
   const [state, action, pending] = useActionState<BookState, FormData>(publicBook, null);
   const days = Array.from({ length: 14 }, (_, i) => addDays(today, i));
   const [day, setDay] = useState(today);
   const [slots, setSlots] = useState<string[] | null>(null);
   const [slot, setSlot] = useState("");
   const [loading, start] = useTransition();
+  const [picked, setPicked] = useState<string[]>([]);
+  const chosen = addons.filter((a) => picked.includes(a.id));
+  const total = (offering?.priceAgorot ?? 0) + chosen.reduce((n, a) => n + a.priceAgorot, 0);
+  const minutes = (offering?.minutes ?? 0) + chosen.reduce((n, a) => n + (a.delivery === "addon" ? a.minutes ?? 0 : 0), 0);
+  const style = accent ? ({ "--accent": accent, "--accent-soft": `color-mix(in srgb, ${accent} 13%, var(--surface))` } as React.CSSProperties) : undefined;
 
   useEffect(() => {
     if (!offering) return;
     setSlot("");
-    start(async () => setSlots(await publicSlots(slug, offering.id, day)));
-  }, [slug, offering, day]);
+    start(async () => setSlots(await publicSlots(slug, offering.id, day, picked)));
+  }, [slug, offering, day, picked]);
 
   if (state?.done) {
     return (
-      <main className="page" style={{ paddingTop: 48 }}>
+      <main className="page" style={{ paddingTop: 48, ...style }}>
         <span className="hero-mark" style={{ background: "var(--good)" }} aria-hidden="true"><Icon n="check" size={32} /></span>
         <h1 className="h1">{t("pubbook.done.title")}</h1>
         <div className="card">
           <b>{state.done.offering}</b>
           <span className="meta"><Icon n="calendar" size={15} />{fmtDate(state.done.starts_at, timezone)} · {fmtTime(state.done.starts_at, timezone)}</span>{state.done.location && <span className="meta"><Icon n="pin" size={15} />{state.done.location}</span>}
+          {!!state.done.addons?.length && <span className="meta"><Icon n="plus" size={15} />{state.done.addons.join(", ")}</span>}
           <span className="muted">{name}</span>
         </div>
         <p className="sub">{t("pubbook.done.body")}</p>
@@ -43,13 +51,26 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
   }
 
   return (
-    <main className="page" style={{ paddingBottom: 40 }}>
+    <main className="page" style={{ paddingBottom: 40, ...style }}>
       <Back href={`/p/${slug}`} label={name} />
       <h1 className="h1">{offering ? t("pubbook.title") : t("pubbook.join.title")}</h1>
       <div className="card"><b className="title-in"><Icon n={offering ? "user" : "users"} className="title-icon" />{offering?.name ?? session?.name}</b>
         {session && <span className="muted">{fmtDate(session.starts_at, timezone)} · {fmtTime(session.starts_at, timezone)}{session.location ? ` · ${session.location}` : ""}</span>}
         {offering?.minutes && <span className="muted small">{offering.minutes} {t("minutes")}</span>}
       </div>
+
+      {offering && addons.length > 0 && (
+        <section className="card" style={{ gap: 8 }}>
+          <Title n="plus">{t("pubbook.addons")}</Title>
+          {addons.map((a) => (
+            <label key={a.id} className={`addon ${picked.includes(a.id) ? "addon-on" : ""}`}>
+              <input type="checkbox" checked={picked.includes(a.id)} onChange={(e) => setPicked((p) => e.target.checked ? [...p, a.id] : p.filter((x) => x !== a.id))} />
+              <span className="grow"><b>{a.name}</b>{a.delivery === "addon" && a.minutes ? <span className="muted small">+{a.minutes} {t("minutes")}</span> : null}</span>
+              <span className="price">+{shekels(a.priceAgorot)}</span>
+            </label>
+          ))}
+        </section>
+      )}
 
       {offering && (
         <section className="card">
@@ -74,6 +95,7 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
         <Title n="user">{t("pubbook.details")}</Title>
         <input type="hidden" name="slug" value={slug} />
         {offering && <><input type="hidden" name="offering" value={offering.id} /><input type="hidden" name="slot" value={slot} /></>}
+        {picked.map((id) => <input key={id} type="hidden" name="addon" value={id} />)}
         {session && <input type="hidden" name="session" value={session.id} />}
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hp" />
         <label className="field"><span className="label">{t("pubbook.name")}</span><input className="input" name="name" required minLength={2} maxLength={80} autoComplete="name" /></label>
@@ -81,6 +103,13 @@ export function BookFlow({ slug, name, timezone, today, offering, session }: Pro
         <label className="field"><span className="label">{t("pubbook.email")}</span><input className="input input-ltr" name="email" type="email" autoComplete="email" /></label>
         <label className="check"><input type="checkbox" name="marketing" /> {t("pubbook.marketing")}</label>
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
+        {offering && (
+          <div className="summary">
+            <span className="grow"><b>{[offering.name, ...chosen.map((c) => c.name)].join(" + ")}</b>
+              <span className="muted small">{minutes ? `${minutes} ${t("minutes")}` : ""}{slot ? ` · ${fmtDate(slot, timezone)} ${fmtTime(slot, timezone)}` : ""}</span></span>
+            <span className="price">{shekels(total)}</span>
+          </div>
+        )}
         <button className="btn btn-primary" disabled={pending || (!!offering && !slot)}>
           {pending ? t("pubbook.sending") : offering ? t("pubbook.submit") : t("pubbook.submit.join")}
         </button>
