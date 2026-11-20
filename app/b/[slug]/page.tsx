@@ -34,6 +34,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const agenda = (agendaData ?? []) as { id: string; starts_at: string; offering: string; capacity: number; booked: number; people: string[] }[];
   const dateLabel = new Date(`${d.today}T12:00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
   const hasPeople = d.counts.active + d.counts.leads > 0;
+  const { data: pageRow } = await sb.from("business_pages").select("published").eq("business_id", biz.id).maybeSingle();
+  const published = !!pageRow?.published;
 
   return (
     <>
@@ -74,7 +76,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           <h2 className="card-title">{t("today.setup.title")}</h2>
           <div className="step"><span className={`dot ${d.counts.offerings ? "dot-done" : ""}`}>{d.counts.offerings ? "✓" : ""}</span>{t("today.setup.offerings")}</div>
           <div className="step"><span className={`dot ${hasPeople ? "dot-done" : ""}`}>{hasPeople ? "✓" : ""}</span>{t("today.setup.people")}</div>
-          <div className="step"><span className="dot" /><span className="grow">{t("today.setup.page")}</span><span className="tag">{t("today.soon")}</span></div>
+          <Link className="step link-row" href={`/b/${d.business.slug}/site`}><span className={`dot ${published ? "dot-done" : ""}`}>{published ? "✓" : ""}</span><span className="grow">{t("today.setup.page")}</span>{!published && <span className="chev">‹</span>}</Link>
           <div className="step"><span className="dot" /><span className="grow">{t("today.setup.pay")}</span><span className="tag">{t("today.soon")}</span></div>
         </section>
 
