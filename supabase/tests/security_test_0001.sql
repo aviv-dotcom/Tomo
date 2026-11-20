@@ -88,3 +88,7 @@ select finish_job((select v::bigint from ctx where k = 'j'), 'boom again');
 select pg_temp.check((select status = 'failed' from jobs where dedupe_key = 'ping:1'), 'job fails for good after 5 attempts');
 update jobs set status = 'running', locked_at = now() - interval '20 minutes' where dedupe_key = 'ping:later';
 select pg_temp.check(release_stuck_jobs() = 1, 'stuck jobs are released');
+
+-- 0002: the worker kicker is server only
+select pg_temp.as_user('aaaaaaaa-0000-0000-0000-000000000001');
+select pg_temp.expect_error($q$select core_kick_worker()$q$, 'permission denied');
