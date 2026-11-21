@@ -13,6 +13,7 @@ export default async function NewAppointmentPage({ params, searchParams }: { par
     sb.rpc("list_people", { p_business: biz.id }),
     sb.from("business_hours").select("weekday").eq("business_id", biz.id),
   ]);
+  const { data: provData } = await sb.rpc("list_providers", { p_business: biz.id });
   const all = (offerings ?? []) as { id: string; name: string; minutes: number | null; delivery: string; price_agorot: number }[];
   const today = localDate(biz.timezone);
   const openDays = [...new Set(((hoursRows ?? []) as { weekday: number }[]).map((h) => h.weekday))];
@@ -20,6 +21,7 @@ export default async function NewAppointmentPage({ params, searchParams }: { par
   if (!d && openDays.length) for (let i = 0; i < 7 && !openDays.includes(weekday(start)); i++) start = addDays(start, 1);
   return <NewAppointment biz={biz} slug={slug} today={today} hasHours={openDays.length > 0} openDays={openDays} date={start} person={person ?? ""} initialOffering={o ?? ""}
     offerings={all.filter((o) => o.delivery === "appointment")}
+    providers={((provData ?? []) as { id: string; name: string; color: string; active: boolean; offerings: string[] | null }[]).filter((p) => p.active)}
     addons={all.filter((o) => o.delivery !== "appointment").map((o) => ({ id: o.id, name: o.name, delivery: o.delivery, minutes: o.minutes, priceAgorot: o.price_agorot }))}
     people={((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => p.status !== "left")} />;
 }

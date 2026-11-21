@@ -6,7 +6,7 @@ import { translator } from "@/lib/i18n";
 
 const t = translator("he");
 type Feed = { name: string; slug: string; timezone: string;
-  sessions: { id: string; starts_at: string; ends_at: string; location: string | null; capacity: number; offering: string; booked: number; first_names: string[]; addons: string[]; updated: string }[];
+  sessions: { id: string; starts_at: string; ends_at: string; location: string | null; capacity: number; offering: string; booked: number; first_names: string[]; addons: string[]; updated: string; provider: string | null }[];
   time_off: { id: string; starts_at: string; ends_at: string; note: string | null }[] };
 
 /** The owner's calendar subscription: /cal/<private token>.ics */
@@ -21,7 +21,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     const who = s.capacity > 1 ? `(${s.booked}/${s.capacity})` : s.first_names[0] ?? "";
     return {
       uid: `${s.id}@tomo`, start: s.starts_at, end: s.ends_at, location: s.location, stamp: s.updated,
-      title: [s.offering, s.addons.length ? `+ ${s.addons.join(" + ")}` : "", who].filter(Boolean).join(" "),
+      title: [s.offering, s.addons.length ? `+ ${s.addons.join(" + ")}` : "", who, s.provider ? `· ${s.provider}` : ""].filter(Boolean).join(" "),
       description: s.capacity > 1 && s.first_names.length ? s.first_names.join(", ") : undefined,
       url: base ? `${base}/b/${f.slug}/calendar/s/${s.id}` : undefined,
     };

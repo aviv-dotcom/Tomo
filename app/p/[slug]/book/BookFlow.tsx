@@ -11,11 +11,11 @@ import { AddToCalendar } from "@/components/AddToCalendar";
 import { shekels } from "@/lib/format";
 
 const t = translator("he");
-type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; addons: Addon[];
+type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; addons: Addon[]; providers: { id: string; name: string; color: string }[];
   offering: { id: string; name: string; minutes: number | null; priceAgorot: number } | null;
   session: { id: string; name: string; starts_at: string; location: string | null } | null };
 
-export function BookFlow({ slug, name, timezone, today, startDay, waitlist, accent, addons, offering, session }: Props) {
+export function BookFlow({ slug, name, timezone, today, startDay, waitlist, accent, addons, providers, offering, session }: Props) {
   const [state, action, pending] = useActionState<BookState, FormData>(publicBook, null);
   const [wState, wAction, wPending] = useActionState<WaitState, FormData>(publicWaitlist, null);
   const [wait, setWait] = useState(waitlist);
@@ -26,6 +26,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
   const [slot, setSlot] = useState("");
   const [loading, start] = useTransition();
   const [picked, setPicked] = useState<string[]>([]);
+  const [provider, setProvider] = useState("");
   const chosen = addons.filter((a) => picked.includes(a.id));
   const total = (offering?.priceAgorot ?? 0) + chosen.reduce((n, a) => n + a.priceAgorot, 0);
   const minutes = (offering?.minutes ?? 0) + chosen.reduce((n, a) => n + (a.delivery === "addon" ? a.minutes ?? 0 : 0), 0);
@@ -34,8 +35,8 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
   useEffect(() => {
     if (!offering) return;
     setSlot("");
-    start(async () => setSlots(await publicSlots(slug, offering.id, day, picked)));
-  }, [slug, offering, day, picked]);
+    start(async () => setSlots(await publicSlots(slug, offering.id, day, picked, provider)));
+  }, [slug, offering, day, picked, provider]);
 
   if (wState?.done) {
     const when = wState.done.starts_at ? `${fmtDate(wState.done.starts_at, timezone)} · ${fmtTime(wState.done.starts_at, timezone)}`
@@ -64,6 +65,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
           <b>{state.done.offering}</b>
           <span className="meta"><Icon n="calendar" size={15} />{fmtDate(state.done.starts_at, timezone)} · {fmtTime(state.done.starts_at, timezone)}</span>{state.done.location && <span className="meta"><Icon n="pin" size={15} />{state.done.location}</span>}
           {!!state.done.addons?.length && <span className="meta"><Icon n="plus" size={15} />{state.done.addons.join(", ")}</span>}
+          {state.done.provider && <span className="meta"><Icon n="user" size={15} />{state.done.provider}</span>}
           <span className="muted">{name}</span>
         </div>
         <AddToCalendar ev={{ title: `${state.done.offering} · ${name}`, start: state.done.starts_at,
@@ -94,6 +96,19 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
               <span className="price">+{shekels(a.priceAgorot)}</span>
             </label>
           ))}
+        </section>
+      )}
+
+      {offering && !wait && providers.length > 1 && (
+        <section className="card" style={{ gap: 8 }}>
+          <Title n="users">{t("prov.with")}</Title>
+          <div className="chips" role="radiogroup" aria-label={t("prov.with")}>
+            <button type="button" role="radio" aria-checked={!provider} className={`chip ${!provider ? "chip-on" : ""}`} onClick={() => setProvider("")}>{t("prov.any")}</button>
+            {providers.map((p) => (
+              <button key={p.id} type="button" role="radio" aria-checked={provider === p.id} className={`chip ${provider === p.id ? "chip-on" : ""}`} onClick={() => setProvider(p.id)}>
+                <span className="dot-color" style={{ background: p.color }} />{p.name}</button>
+            ))}
+          </div>
         </section>
       )}
 
@@ -137,6 +152,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
         <input type="hidden" name="slug" value={slug} />
         {offering && <><input type="hidden" name="offering" value={offering.id} /><input type="hidden" name="slot" value={slot} /></>}
         {picked.map((id) => <input key={id} type="hidden" name="addon" value={id} />)}
+        {offering && !wait && <input type="hidden" name="provider" value={provider} />}
         {session && <input type="hidden" name="session" value={session.id} />}
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hp" />
         <label className="field"><span className="label">{t("pubbook.name")}</span><input className="input" name="name" required minLength={2} maxLength={80} autoComplete="name" /></label>

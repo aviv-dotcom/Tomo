@@ -37,7 +37,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   if (error || !data) notFound();
   const d = data as Today;
   const { data: agendaData } = await sb.rpc("day_agenda", { p_business: biz.id, p_date: d.today });
-  const agenda = (agendaData ?? []) as { id: string; starts_at: string; offering: string; capacity: number; booked: number; people: string[] }[];
+  const agenda = (agendaData ?? []) as { id: string; starts_at: string; offering: string; capacity: number; booked: number; people: string[]; provider: { name: string; color: string } | null }[];
   const dateLabel = new Date(`${d.today}T12:00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
   const hasPeople = d.counts.active + d.counts.leads > 0;
   const [{ data: pageRow }, { data: formRow }, { count: hoursCount }] = await Promise.all([
@@ -113,7 +113,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
             <Link key={a.id} href={`/b/${d.business.slug}/calendar/s/${a.id}`} className="list-row link-row">
               <span className="session-time">{fmtTime(a.starts_at, d.business.timezone)}</span>
               <IconTile n={a.capacity > 1 ? "users" : "user"} size={30} />
-              <span className="grow">{a.offering}{a.capacity === 1 && a.people[0] ? ` · ${a.people[0]}` : ""}</span>
+              <span className="grow">{a.offering}{a.capacity === 1 && a.people[0] ? ` · ${a.people[0]}` : ""}{a.provider ? <span className="muted small">{a.provider.name}</span> : null}</span>
               {a.capacity > 1 && <span className="muted small">{a.booked}/{a.capacity}</span>}
               <Icon n="chev" className="chev" />
             </Link>

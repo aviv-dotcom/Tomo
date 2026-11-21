@@ -281,3 +281,4 @@ img.pub-logo { background: var(--surface); }
 .week-empty { color: var(--ink-2); font-size: 12px; text-align: center; padding: 10px 0; }
 .week-add { display: flex; justify-content: center; align-items: center; min-height: 32px; border-radius: 10px; border: 1.5px dashed var(--line); color: var(--ink-2); text-decoration: none; }
 .week-add:hover { color: var(--accent); border-color: var(--accent); }
+.dot-color { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-inline-end: 6px; flex: none; }

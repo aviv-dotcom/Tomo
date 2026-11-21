@@ -16,7 +16,7 @@ import { Avatar, Back, Empty, Icon, Title, type IconName } from "@/components/Ic
 export const dynamic = "force-dynamic";
 const t = translator("he");
 
-type Detail = { id: string; starts_at: string; ends_at: string; capacity: number; location: string | null; status: string;
+type Detail = { id: string; starts_at: string; ends_at: string; capacity: number; location: string | null; status: string; provider: { name: string; color: string } | null;
   offering: { id: string; name: string; delivery: string }; bookings: { id: string; person_id: string; name: string; status: string }[] };
 
 export default async function SessionPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
@@ -49,7 +49,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
       <main className="page">
         <Back href={`/b/${slug}/calendar?d=${localDate(tz, new Date(s.starts_at))}`} label={t("cal.title")} />
         <h1 className="h1">{s.offering.name}</h1>
-        <div className="row" style={{ flexWrap: "wrap", gap: 14 }}><span className="meta"><Icon n="calendar" size={16} />{fmtDate(s.starts_at, tz)}</span><span className="meta"><Icon n="clock" size={16} /><bdi dir="ltr">{fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}</bdi></span>{s.location && <span className="meta"><Icon n="pin" size={16} />{s.location}</span>}{s.status === "cancelled" && <span className="tag tag-warn">{t("session.cancelled")}</span>}</div>
+        <div className="row" style={{ flexWrap: "wrap", gap: 14 }}><span className="meta"><Icon n="calendar" size={16} />{fmtDate(s.starts_at, tz)}</span><span className="meta"><Icon n="clock" size={16} /><bdi dir="ltr">{fmtTime(s.starts_at, tz)}–{fmtTime(s.ends_at, tz)}</bdi></span>{s.provider && <span className="meta"><span className="dot-color" style={{ background: s.provider.color }} />{s.provider.name}</span>}{s.location && <span className="meta"><Icon n="pin" size={16} />{s.location}</span>}{s.status === "cancelled" && <span className="tag tag-warn">{t("session.cancelled")}</span>}</div>
         <section className="card" style={{ gap: 0 }}>
           <Title n="users" style={{ marginBottom: 6 }} extra={isClass ? <span className="muted small">{booked}/{s.capacity}</span> : undefined}>{t("session.participants")}</Title>
           {s.bookings.length === 0 && <Empty n="users" text={t("session.empty")} />}

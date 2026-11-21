@@ -15,6 +15,7 @@ export default async function PublicBookPage({ params, searchParams }: { params:
   const today = localDate(p.timezone);
   if (!offering && !session) notFound();
   return <BookFlow slug={slug} name={p.name} timezone={p.timezone} today={today} startDay={d && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= today ? d : today} waitlist={!!session && session.left === 0} accent={p.accent ?? null} addons={offering ? p.addons ?? [] : []}
+    providers={offering ? (p.providers ?? []).filter((x) => !x.offerings || x.offerings.includes(offering.id)) : []}
     offering={offering ? { id: offering.id, name: offering.name, minutes: offering.minutes, priceAgorot: offering.priceAgorot } : null}
     session={session ? { id: session.id, name: session.offering, starts_at: session.starts_at, location: session.location } : null} />;
 }

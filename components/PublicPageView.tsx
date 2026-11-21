@@ -18,6 +18,7 @@ export type PageData = {
   hours: { weekday: number; start: number; end: number }[];
   offerings: { id: string; name: string; delivery: string; billing: string; minutes: number | null; priceAgorot: number }[];
   addons?: Addon[];
+  providers?: { id: string; name: string; color: string; offerings: string[] | null }[];
   classes: { id: string; offering_id: string; offering: string; starts_at: string; location: string | null; left: number }[];
 };
 

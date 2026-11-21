@@ -13,12 +13,15 @@ import { Back, Icon } from "@/components/Icon";
 
 const t = translator("he");
 type Props = { biz: { id: string; timezone: string }; slug: string; date: string; today: string; hasHours: boolean; openDays: number[]; initialOffering: string; person: string;
-  offerings: { id: string; name: string; minutes: number | null }[]; addons: Addon[]; people: { id: string; name: string }[] };
+  offerings: { id: string; name: string; minutes: number | null }[]; addons: Addon[]; people: { id: string; name: string }[];
+  providers: { id: string; name: string; color: string; offerings: string[] | null }[] };
 
-export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, initialOffering, person, offerings, addons, people }: Props) {
+export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, openDays, initialOffering, person, offerings, addons, people, providers }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(bookAppointment, null);
   const [offering, setOffering] = useState(offerings.some((o) => o.id === initialOffering) ? initialOffering : offerings[0]?.id ?? "");
   const [picked, setPicked] = useState<string[]>([]);
+  const [provider, setProvider] = useState("");
+  const eligible = providers.filter((p) => !p.offerings || p.offerings.includes(offering));
   const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[] | null>(null);
   const [slot, setSlot] = useState("");
@@ -31,8 +34,8 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
   useEffect(() => {
     if (!offering || !date) return;
     setSlot("");
-    startLoading(async () => setSlots(await getSlots(biz.id, offering, date, picked)));
-  }, [biz.id, offering, date, picked]);
+    startLoading(async () => setSlots(await getSlots(biz.id, offering, date, picked, provider)));
+  }, [biz.id, offering, date, picked, provider]);
 
   return (
     <main className="page">
@@ -56,6 +59,17 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
                 </label>
               ))}
             </div>
+          )}
+          {eligible.length > 0 && (
+            <div className="field"><span className="label">{t("prov.with")}</span>
+              <input type="hidden" name="provider" value={eligible.some((p) => p.id === provider) ? provider : ""} />
+              <div className="chips" role="radiogroup" aria-label={t("prov.with")}>
+                <button type="button" role="radio" aria-checked={!provider} className={`chip ${!provider ? "chip-on" : ""}`} onClick={() => setProvider("")}>{t("prov.any.staff")}</button>
+                {eligible.map((p) => (
+                  <button key={p.id} type="button" role="radio" aria-checked={provider === p.id} className={`chip ${provider === p.id ? "chip-on" : ""}`} onClick={() => setProvider(p.id)}>
+                    <span className="dot-color" style={{ background: p.color }} />{p.name}</button>
+                ))}
+              </div></div>
           )}
           <label className="field"><span className="label">{t("appt.person")}</span>
             <select className="input" name="person" defaultValue={person} required>

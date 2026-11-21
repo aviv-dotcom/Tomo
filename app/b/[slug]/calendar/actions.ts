@@ -10,9 +10,9 @@ import type { MessageKey } from "@/lib/i18n/messages";
 export type FormState = { error?: MessageKey; ok?: number } | null;
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
-export async function getSlots(business: string, offering: string, date: string, addons: string[] = []): Promise<string[]> {
+export async function getSlots(business: string, offering: string, date: string, addons: string[] = [], provider = ""): Promise<string[]> {
   const sb = await serverSupabase();
-  const { data } = await sb.rpc("free_slots", { p_business: business, p_offering: offering, p_date: date, p_addons: addons.length ? addons : null });
+  const { data } = await sb.rpc("free_slots", { p_business: business, p_offering: offering, p_date: date, p_addons: addons.length ? addons : null, p_provider: provider || null });
   return (data ?? []) as string[];
 }
 
@@ -32,13 +32,13 @@ export async function bookAppointment(_p: FormState, f: FormData): Promise<FormS
   if (!force && f.get("repeat") === "on" && weeks >= 2) {
     // The same time every week; weeks that are taken are skipped and reported.
     const { data, error } = await sb.rpc("book_appointment_series", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"),
-      p_first: startsAt, p_weeks: weeks, p_addons: addons.length ? addons : null });
+      p_first: startsAt, p_weeks: weeks, p_addons: addons.length ? addons : null, p_provider: str(f, "provider") || null });
     if (error) return { error: errorKey(error.message) };
     const r = data as { made: number; skipped: string[] };
     redirect(`/b/${slug}/calendar?d=${date}&saved=series&n=${r.made}&s=${r.skipped.length}`);
   }
   const { error } = await sb.rpc("book_appointment", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"), p_starts_at: startsAt, p_force: force,
-    p_addons: f.getAll("addon").map(String).filter(Boolean).length ? f.getAll("addon").map(String).filter(Boolean) : null });
+    p_addons: f.getAll("addon").map(String).filter(Boolean).length ? f.getAll("addon").map(String).filter(Boolean) : null, p_provider: str(f, "provider") || null });
   if (error) return { error: errorKey(error.message) };
   redirect(`/b/${slug}/calendar?d=${date}`);
 }
@@ -96,7 +96,7 @@ export async function addTimeOff(_p: FormState, f: FormData): Promise<FormState>
     sb.rpc("cal_at", { p_business: business, p_date: from, p_min: 0 }),
     sb.rpc("cal_at", { p_business: business, p_date: next.toISOString().slice(0, 10), p_min: 0 }),
   ]);
-  const { error } = await sb.rpc("add_time_off", { p_business: business, p_from: start, p_to: end, p_note: str(f, "note") || null });
+  const { error } = await sb.rpc("add_time_off", { p_business: business, p_from: start, p_to: end, p_note: str(f, "note") || null, p_provider: str(f, "provider") || null });
   if (error) return { error: errorKey(error.message) };
   revalidatePath(`/b/${str(f, "slug")}/calendar/off`);
   return { ok: Date.now() };

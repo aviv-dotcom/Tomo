@@ -45,6 +45,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
         {isOwner && <section className="card" style={{ gap: 0 }}>
           <Title n="calendar" style={{ marginBottom: 4 }}>{t("set.schedule")}</Title>
           {row("clock", "calendar/hours", "hours.title", "set.hours.hint", !hours ? <span className="tag tag-warn">!</span> : undefined)}
+          {row("users", "providers", "prov.title", "prov.row.hint")}
           {row("calendarOff", "calendar/off", "off.title", "set.off.hint")}
           {row("link", "calendar-sync", "sync.title", "sync.row.hint")}
         </section>}
