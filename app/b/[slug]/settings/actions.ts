@@ -25,3 +25,11 @@ export async function saveCancelHours(_p: SettingsState, f: FormData): Promise<S
   revalidatePath(`/b/${str(f, "slug")}/settings`);
   return { ok: Date.now() };
 }
+
+export async function setModule(f: FormData): Promise<SettingsState> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("set_business_module", { p_business: str(f, "business"), p_module: str(f, "module"), p_on: str(f, "on") === "1" });
+  if (error) return { error: errorKey(error.message) };
+  revalidatePath(`/b/${str(f, "slug")}`, "layout");
+  return { ok: Date.now() };
+}

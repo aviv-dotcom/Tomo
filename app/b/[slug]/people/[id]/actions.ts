@@ -97,3 +97,10 @@ export async function shareVisit(f: FormData): Promise<{ error?: MessageKey; tok
   revalidatePath(`/b/${String(f.get("slug") ?? "")}/people/${String(f.get("person") ?? "")}`);
   return { token: (data as string | null) ?? undefined };
 }
+
+export async function saveRecommendations(f: FormData): Promise<{ error?: MessageKey }> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("set_visit_recommendations", { p_booking: String(f.get("booking") ?? ""), p_text: String(f.get("text") ?? ""),
+    p_products: f.getAll("product").map(String) });
+  return error ? { error: errorKey(error.message) } : {};
+}

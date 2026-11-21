@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { shrinkImage } from "@/lib/resize";
-import { whatsappLink } from "@/lib/format";
+import { shekels, whatsappLink } from "@/lib/format";
 import { Icon } from "@/components/Icon";
-import { removePhoto, saveAlert, saveVisitNote, shareVisit, uploadPhoto, type SaveState } from "@/app/b/[slug]/people/[id]/actions";
+import { removePhoto, saveAlert, saveRecommendations, saveVisitNote, shareVisit, uploadPhoto, type SaveState } from "@/app/b/[slug]/people/[id]/actions";
 
 const t = translator("he");
 
@@ -35,7 +35,11 @@ export type VisitCardProps = {
   business: string; slug: string; person: string; booking: string;
   note: string | null; shared: boolean; token: string | null; photos: VisitPhoto[];
   phone: string | null; clientName: string; businessName: string; base: string;
+  recommendations: string | null; products: Product[]; productOptions: Product[];
+  /** The business's switches (Settings): before/after photos and recommendations. What already exists always shows. */
+  withPhotos: boolean; withRecs: boolean;
 };
+export type Product = { id: string; name: string; priceAgorot: number };
 
 /**
  * One visit's summary card: what was done, before and after photos, and whether the client sees it.
@@ -52,6 +56,7 @@ export function VisitCard(p: VisitCardProps) {
   const [shared, setShared] = useState(p.shared);
   const [token, setToken] = useState(p.token);
   const [copied, setCopied] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(p.photos.length > 0);
 
   function save() {
     const fd = new FormData(); fd.set("booking", p.booking); fd.set("note", draft);
@@ -98,11 +103,18 @@ export function VisitCard(p: VisitCardProps) {
       )}
       {saved && <span className="muted small row" role="status" style={{ gap: 4 }}><Icon n="check" size={14} />{t("card.saved")}</span>}
 
-      {/* Before and after */}
-      <div className="ba">
-        <PhotoColumn {...p} label={t("photo.before")} kind="before" photos={before} />
-        <PhotoColumn {...p} label={t("photo.after")} kind="after" photos={after} />
-      </div>
+      {/* Recommendations and products (optional) */}
+      <Recommendations {...p} />
+
+      {/* Before and after: opened with a button, shown when there are photos */}
+      {showPhotos ? (
+        <div className="ba">
+          <PhotoColumn {...p} label={t("photo.before")} kind="before" photos={before} />
+          <PhotoColumn {...p} label={t("photo.after")} kind="after" photos={after} />
+        </div>
+      ) : p.withPhotos && (
+        <button type="button" className="btn btn-secondary btn-small visit-add" onClick={() => setShowPhotos(true)}><Icon n="image" />{t("visit.add.photos")}</button>
+      )}
 
       {/* Share with the client */}
       <div className="visit-share">
@@ -164,4 +176,58 @@ function PhotoColumn({ label, kind, photos, business, slug, person, booking }: V
       {error && <span className="error small">{t(error)}</span>}
     </div>
   );
+}
+
+/** What the client should do next, and which of the business's products fit. Opened with a button. */
+function Recommendations(p: VisitCardProps) {
+  const router = useRouter();
+  const [text, setText] = useState(p.recommendations ?? "");
+  const [chosen, setChosen] = useState<string[]>(p.products.map((x) => x.id));
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(text);
+  const [pick, setPick] = useState<string[]>(chosen);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [pending, start] = useTransition();
+  const names = new Map([...p.productOptions, ...p.products].map((x) => [x.id, x]));
+  const has = !!text || chosen.length > 0;
+  function save() {
+    const fd = new FormData(); fd.set("booking", p.booking); fd.set("text", draft); pick.forEach((id) => fd.append("product", id));
+    start(async () => {
+      const r = await saveRecommendations(fd);
+      if (r.error) { setError(r.error); return; }
+      setError(null); setText(draft.trim()); setChosen(pick); setEditing(false); router.refresh();
+    });
+  }
+  const open = () => { setDraft(text); setPick(chosen); setEditing(true); };
+  if (editing) return (
+    <div className="visit-recs">
+      <b className="small row" style={{ gap: 6 }}><Icon n="sparkles" size={15} />{t("visit.recs")}</b>
+      <textarea className="input" rows={3} maxLength={2000} value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus placeholder={t("visit.recs.placeholder")} aria-label={t("visit.recs")} />
+      {p.productOptions.length > 0 ? (<>
+        <span className="muted small">{t("visit.recs.products")}</span>
+        <div className="chips">
+          {p.productOptions.map((o) => {
+            const on = pick.includes(o.id);
+            return <button key={o.id} type="button" role="checkbox" aria-checked={on} className={`chip ${on ? "chip-on" : ""}`}
+              onClick={() => setPick((x) => (on ? x.filter((y) => y !== o.id) : [...x, o.id]))}>{on && <Icon n="check" size={13} />}{o.name} · {shekels(o.priceAgorot)}</button>;
+          })}
+        </div></>) : <span className="muted small">{t("visit.recs.no_products")}</span>}
+      <div className="row" style={{ gap: 8 }}>
+        <button type="button" className="btn btn-primary btn-small" disabled={pending} onClick={save}><Icon n="check" />{t("card.save")}</button>
+        <button type="button" className="btn btn-secondary btn-small" disabled={pending} onClick={() => setEditing(false)}>{t("visit.cancel")}</button>
+      </div>
+      {error && <span className="error">{t(error)}</span>}
+    </div>
+  );
+  if (has) return (
+    <div className="visit-recs">
+      <b className="small row" style={{ gap: 6 }}><Icon n="sparkles" size={15} />{t("visit.recs")}</b>
+      {text && <p style={{ margin: 0, lineHeight: 1.65, whiteSpace: "pre-line" }}>{text}</p>}
+      {chosen.map((id) => names.get(id)).filter(Boolean).map((o) => (
+        <span key={o!.id} className="rec-product"><Icon n="tag" size={14} /><span className="grow">{o!.name}</span><span className="muted small">{shekels(o!.priceAgorot)}</span></span>
+      ))}
+      <button type="button" className="link-btn small" style={{ padding: 0, alignSelf: "start" }} onClick={open}><Icon n="edit" size={14} />{t("visit.edit")}</button>
+    </div>
+  );
+  return p.withRecs ? <button type="button" className="btn btn-secondary btn-small visit-add" onClick={open}><Icon n="sparkles" />{t("visit.add.recs")}</button> : null;
 }

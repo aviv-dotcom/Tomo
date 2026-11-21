@@ -9,7 +9,7 @@ import { PersonForm } from "./PersonForm";
 import { NotesForm, SellPass } from "./PassForms";
 import { cancelPass } from "./actions";
 import { AlertEditor, VisitCard } from "@/components/VisitForms";
-import { visitPhotos } from "@/lib/visit-photos";
+import { visitPhotos, visitSetup } from "@/lib/visit-photos";
 import { siteBase } from "@/lib/site";
 import { ForgetButton } from "./ForgetButton";
 import { ChargeForm, PaymentForm } from "./MoneyForms";
@@ -22,7 +22,7 @@ const t = translator("he");
 
 type Card = { id: string; name: string; phone: string | null; email: string | null; status: string; marketing_consent: boolean; notes: string | null; alert: string | null;
   messages: { kind: string; at: string }[]; waiting: { id: string; date: string; part: string; offering: string }[];
-  visits: number; no_shows: number; bookings: { id: string; session_id: string; starts_at: string; offering: string; status: string; summary: string | null; shared: boolean; token: string | null }[] };
+  visits: number; no_shows: number; bookings: { id: string; session_id: string; starts_at: string; offering: string; status: string; summary: string | null; recommendations: string | null; products: { id: string; name: string; priceAgorot: number }[]; shared: boolean; token: string | null }[] };
 
 export default async function PersonPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -37,11 +37,13 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
   ]);
   const passes = (passData ?? []) as { id: string; name: string; kind: string; entries: number | null; left: number | null; used: number; expires_on: string | null; status: string; expired: boolean }[];
   const isOwner = role === "owner";
+  const vs = await visitSetup(sb, biz.id);
   const photosOf = await visitPhotos(sb, p.bookings.map((b) => b.id));
   const now = Date.now();
   // A visit gets its summary card once it's (nearly) happening, or as soon as anything was written or photographed for it.
-  const visitDone = (b: Card["bookings"][number]) => b.status === "attended" || !!b.summary || b.shared || photosOf(b.id).length > 0
-    || (b.status === "booked" && Date.parse(b.starts_at) <= now + 36e5);
+  const hasContent = (b: Card["bookings"][number]) => !!b.summary || b.shared || !!b.recommendations || b.products.length > 0 || photosOf(b.id).length > 0;
+  const visitDone = (b: Card["bookings"][number]) => hasContent(b)
+    || (vs.summary && (b.status === "attended" || (b.status === "booked" && Date.parse(b.starts_at) <= now + 36e5)));
   const firstDone = p.bookings.find(visitDone)?.id;
   const form = formData as { questions: string[]; answers: boolean[]; details: string | null; signed_at: string } | null;
   const money = (moneyData ?? { balance: 0, lines: [] }) as { balance: number;
@@ -65,7 +67,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
         </div>
 <div className="cols">
         <section className="card" style={{ gap: 0 }}>
-          <Title n="calendar" style={{ marginBottom: 6 }}>{t("visit.cards")}</Title>
+          <Title n="calendar" style={{ marginBottom: 6 }}>{vs.summary ? t("visit.cards") : t("card.history")}</Title>
           {p.bookings.length === 0 && <Empty n="calendar" text={t("card.history.empty")} />}
           {p.bookings.map((b) => {
             const when = <span className="grow"><span>{b.offering}</span><span className="muted small">{fmtDate(b.starts_at, biz.timezone)} · {fmtTime(b.starts_at, biz.timezone)}</span></span>;
@@ -79,7 +81,8 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
                   <span className="visit-icons small">{b.summary && <Icon n="clipboard" size={14} />}{photos.length > 0 && <><Icon n="image" size={14} />{photos.length}</>}{b.shared && <span className="tag tag-good">{t("visit.shared")}</span>}</span>
                   <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span><Icon n="down" size={16} /></summary>
                 <VisitCard business={biz.id} slug={slug} person={p.id} booking={b.id} note={b.summary} shared={b.shared} token={b.token}
-                  photos={photos} phone={p.phone} clientName={p.name} businessName={biz.name} base={siteBase()} />
+                  photos={photos} phone={p.phone} clientName={p.name} businessName={biz.name} base={siteBase()}
+                      recommendations={b.recommendations} products={b.products} productOptions={vs.productOptions} withPhotos={vs.withPhotos} withRecs={vs.withRecs} />
                 <Link className="link-btn small" style={{ padding: "6px 0" }} href={`/b/${slug}/calendar/s/${b.session_id}`}>{t("visit.open_session")}</Link>
               </details>
             );

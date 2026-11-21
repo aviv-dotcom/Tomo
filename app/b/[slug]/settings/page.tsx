@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { OwnerNav } from "@/components/OwnerNav";
 import { BusinessForm, PolicyForm } from "./BusinessForm";
+import { VisitSettings } from "./VisitSettings";
 import { Icon, IconTile, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const { sb, biz, isOwner, role } = await requireBusiness(slug);
   const [{ data: b }, { data: page }, { data: form }, { count: hours }, { count: offerings }] = await Promise.all([
-    sb.from("businesses").select("cancel_hours").eq("id", biz.id).single(),
+    sb.from("businesses").select("cancel_hours, modules").eq("id", biz.id).single(),
     sb.from("business_pages").select("published").eq("business_id", biz.id).maybeSingle(),
     sb.from("business_forms").select("enabled").eq("business_id", biz.id).maybeSingle(),
     sb.from("business_hours").select("weekday", { count: "exact", head: true }).eq("business_id", biz.id),
@@ -55,6 +56,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
           {row("tag", "services", "svc.title", "set.services.hint", <span className="muted small">{offerings ?? 0}</span>)}
           {row("globe", "site", "site.title", "set.site.hint", onOff(!!page?.published))}
         </section>}
+        {isOwner && <VisitSettings business={biz.id} slug={slug} modules={(b?.modules ?? []) as string[]} />}
         <section className="card" style={{ gap: 0 }}>
           <Title n="chat" style={{ marginBottom: 4 }}>{isOwner ? t("set.clients") : t("set.useful")}</Title>
           {isOwner && row("zap", "automations", "auto.title", "set.auto.hint")}

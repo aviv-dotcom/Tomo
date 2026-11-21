@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { anonSupabase } from "@/lib/supabase/anon";
 import { translator } from "@/lib/i18n";
-import { whatsappLink } from "@/lib/format";
+import { shekels, whatsappLink } from "@/lib/format";
 import { fmtDate, fmtTime } from "@/lib/time";
 import { Icon, IconTile } from "@/components/Icon";
 
@@ -12,7 +12,7 @@ const t = translator("he");
 const isUuid = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 
 type Visit = { business: { name: string; slug: string; timezone: string; whatsapp: string | null; page: boolean }; first_name: string;
-  offering: string; starts_at: string; provider: string | null; note: string | null; photos: { id: string; kind: string }[] };
+  offering: string; starts_at: string; provider: string | null; note: string | null; recommendations: string | null; products: { id: string; name: string; priceAgorot: number }[]; photos: { id: string; kind: string }[] };
 
 /** The visit summary the business chose to share with the client: private link, no sign-in. */
 export default async function VisitPage({ params }: { params: Promise<{ token: string }> }) {
@@ -33,6 +33,18 @@ export default async function VisitPage({ params }: { params: Promise<{ token: s
         {v.provider && <span className="meta"><Icon n="user" size={16} />{v.provider}</span>}
       </div>
       {v.note && <section className="card"><p style={{ margin: 0, lineHeight: 1.7, whiteSpace: "pre-line" }}>{v.note}</p></section>}
+      {(v.recommendations || v.products.length > 0) && (
+        <section className="card">
+          <b className="row" style={{ gap: 6 }}><Icon n="sparkles" size={17} />{t("v.recs")}</b>
+          {v.recommendations && <p style={{ margin: 0, lineHeight: 1.7, whiteSpace: "pre-line" }}>{v.recommendations}</p>}
+          {v.products.map((o) => (
+            <div key={o.id} className="list-row">
+              <span className="grow"><span>{o.name}</span><span className="muted small">{shekels(o.priceAgorot)}</span></span>
+              {v.business.page && <Link className="btn btn-secondary btn-small" href={`/p/${v.business.slug}/order?o=${o.id}`}><Icon n="plus" />{t("v.order")}</Link>}
+            </div>
+          ))}
+        </section>
+      )}
       {v.photos.length > 0 && (
         <section className="card">
           <div className="ba">

@@ -11,7 +11,7 @@ import { AddToSession } from "./AddToSession";
 import { CancelSession } from "./CancelSession";
 import { StopSeries } from "./StopSeries";
 import { VisitCard } from "@/components/VisitForms";
-import { visitPhotos } from "@/lib/visit-photos";
+import { visitPhotos, visitSetup } from "@/lib/visit-photos";
 import { siteBase } from "@/lib/site";
 import { CancelSeries } from "./CancelSeries";
 import { Avatar, Back, Empty, Icon, Title, type IconName } from "@/components/Icon";
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 const t = translator("he");
 
 type Detail = { id: string; starts_at: string; ends_at: string; capacity: number; location: string | null; status: string; provider: { name: string; color: string } | null;
-  offering: { id: string; name: string; delivery: string }; bookings: { id: string; person_id: string; name: string; status: string; alert: string | null; summary: string | null; phone: string | null; shared: boolean; token: string | null }[] };
+  offering: { id: string; name: string; delivery: string }; bookings: { id: string; person_id: string; name: string; status: string; alert: string | null; summary: string | null; recommendations: string | null; products: { id: string; name: string; priceAgorot: number }[]; phone: string | null; shared: boolean; token: string | null }[] };
 
 export default async function SessionPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -39,6 +39,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
   const apptSeries = (seriesRow as { series_id: string | null } | null)?.series_id ?? null;
   const { data: addonRows } = s.bookings.length ? await sb.from("booking_addons").select("booking_id, name, price_agorot").in("booking_id", s.bookings.map((b) => b.id)) : { data: [] };
   const addonsOf = (id: string) => ((addonRows ?? []) as { booking_id: string; name: string; price_agorot: number }[]).filter((a) => a.booking_id === id);
+  const vs = await visitSetup(sb, biz.id);
   const photosOf = await visitPhotos(sb, s.bookings.map((b) => b.id));
   const candidates = ((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => !taken.has(p.id) && p.status !== "left");
   const op = (b: { id: string }, value: string, label: string, icon: IconName, primary = false) => (
@@ -70,14 +71,16 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
               </div>
               {(b.status === "booked" || b.status === "attended") && (() => {
                 const photos = photosOf(b.id);
-                const has = !!b.summary || photos.length > 0 || b.shared;
+                const has = !!b.summary || photos.length > 0 || b.shared || !!b.recommendations || b.products.length > 0;
+                if (!vs.summary && !has) return null;
                 return (
                   <details className="visit-fold" open={has || b.status === "attended"}>
                     <summary><span className="row" style={{ gap: 8 }}><Icon n="clipboard" size={16} /><b className="small grow">{t("visit.title")}</b>
                       <span className="visit-icons small">{photos.length > 0 && <><Icon n="image" size={14} />{photos.length}</>}{b.shared && <span className="tag tag-good">{t("visit.shared")}</span>}</span>
                       <Icon n="down" size={16} /></span></summary>
                     <VisitCard business={biz.id} slug={slug} person={b.person_id} booking={b.id} note={b.summary} shared={b.shared} token={b.token}
-                      photos={photos} phone={b.phone} clientName={b.name} businessName={biz.name} base={siteBase()} />
+                      photos={photos} phone={b.phone} clientName={b.name} businessName={biz.name} base={siteBase()}
+                      recommendations={b.recommendations} products={b.products} productOptions={vs.productOptions} withPhotos={vs.withPhotos} withRecs={vs.withRecs} />
                   </details>
                 );
               })()}

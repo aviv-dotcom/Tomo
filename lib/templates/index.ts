@@ -7,7 +7,7 @@ import type { IconName } from "@/components/Icon";
  */
 export type Delivery = "appointment" | "class" | "project" | "membership" | "product" | "addon";
 export type Billing = "one_time" | "pack" | "subscription" | "dues";
-export type ModuleKey = "formula" | "before_after" | "workout_plans" | "habits" | "lesson_notes" | "family";
+export type ModuleKey = "formula" | "before_after" | "workout_plans" | "habits" | "lesson_notes" | "family" | "visit_summary" | "recommendations";
 
 export type TemplateKey = "fitness" | "beauty" | "tutor" | "custom";
 
@@ -25,7 +25,7 @@ export const templates: Template[] = [
     key: "fitness",
     icon: "zap",
     vocabulary: { client: "מתאמן", clients: "מתאמנים", session: "אימון" },
-    modules: ["workout_plans", "habits"],
+    modules: ["workout_plans", "habits", "visit_summary", "recommendations"],
     sampleOfferings: [
       { name: "קבוצת כוח", delivery: "class", billing: "subscription", minutes: 60, priceAgorot: 32000 },
       { name: "כרטיסייה 10 אימונים", delivery: "class", billing: "pack", priceAgorot: 60000 },
@@ -37,7 +37,7 @@ export const templates: Template[] = [
     key: "beauty",
     icon: "sparkles",
     vocabulary: { client: "לקוחה", clients: "לקוחות", session: "טיפול" },
-    modules: ["formula", "before_after"],
+    modules: ["formula", "before_after", "visit_summary", "recommendations"],
     sampleOfferings: [
       { name: "טיפול פנים", delivery: "appointment", billing: "one_time", minutes: 60, priceAgorot: 38000, depositAgorot: 8000 },
       { name: "מילוי ג׳ל", delivery: "appointment", billing: "one_time", minutes: 75, priceAgorot: 22000 },
@@ -49,7 +49,7 @@ export const templates: Template[] = [
     key: "tutor",
     icon: "list",
     vocabulary: { client: "תלמיד", clients: "תלמידים", session: "שיעור" },
-    modules: ["lesson_notes", "family"],
+    modules: ["lesson_notes", "family", "visit_summary", "recommendations"],
     sampleOfferings: [
       { name: "שיעור פרטי", delivery: "appointment", billing: "one_time", minutes: 60, priceAgorot: 18000 },
       { name: "כרטיסייה 10 שיעורים", delivery: "appointment", billing: "pack", priceAgorot: 160000 },
@@ -60,7 +60,7 @@ export const templates: Template[] = [
     key: "custom",
     icon: "store",
     vocabulary: { client: "לקוח", clients: "לקוחות", session: "פגישה" },
-    modules: [],
+    modules: ["visit_summary"],
     sampleOfferings: [],
     automations: ["booking_reminder"],
   },
