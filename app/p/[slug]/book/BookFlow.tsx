@@ -105,20 +105,22 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
       {offering && !wait && providers.length > 1 && (
         <section className="card" style={{ gap: 8 }}>
           <Title n="users">{t("prov.with")}</Title>
-          <div className="chips" role="radiogroup" aria-label={t("prov.with")}>
-            <button type="button" role="radio" aria-checked={!provider} className={`chip ${!provider ? "chip-on" : ""}`} onClick={() => setProvider("")}>{t("prov.any")}</button>
+          <div className="prov-pick" role="radiogroup" aria-label={t("prov.with")}>
+            <button type="button" role="radio" aria-checked={!provider} className="prov-opt" onClick={() => setProvider("")}>
+              <span className="prov-face prov-any"><Icon n="users" size={24} /></span><span className="prov-name">{t("prov.any")}</span>
+            </button>
             {providers.map((p) => (
-              <button key={p.id} type="button" role="radio" aria-checked={provider === p.id} className={`chip ${provider === p.id ? "chip-on" : ""}`} onClick={() => setProvider(p.id)}>
-                {p.photo ? <img src={mediaUrl(p.photo) ?? ""} alt="" className="prov-photo" style={{ width: 24, height: 24, marginInlineStart: -4 }} /> : <span className="dot-color" style={{ background: p.color }} />}{p.name}</button>
+              <button key={p.id} type="button" role="radio" aria-checked={provider === p.id} className="prov-opt" onClick={() => setProvider(p.id)}>
+                {p.photo ? <img src={mediaUrl(p.photo) ?? ""} alt="" className="prov-face" />
+                  : <span className="prov-face" style={{ background: p.color, color: "#fff" }}>{p.name.slice(0, 1)}</span>}
+                <span className="prov-name">{p.name}</span>
+              </button>
             ))}
           </div>
           {(() => {
             const sel = providers.find((x) => x.id === provider);
-            return sel && (sel.bio || sel.photo) ? (
-              <div className="prov-card">
-                {sel.photo && <img src={mediaUrl(sel.photo) ?? ""} alt="" className="prov-photo" style={{ width: 56, height: 56 }} />}
-                <span className="grow"><b>{sel.name}</b>{sel.bio && <span className="muted small" style={{ display: "block" }}>{sel.bio}</span>}</span>
-              </div>
+            return sel?.bio ? (
+              <div className="prov-card" aria-live="polite"><span className="grow"><b style={{ display: "block" }}>{sel.name}</b><span className="muted">{sel.bio}</span></span></div>
             ) : null;
           })()}
         </section>
