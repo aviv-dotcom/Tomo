@@ -19,14 +19,19 @@ export default async function CalendarPage({ params, searchParams }: { params: P
   const { sb, biz } = await requireBusiness(slug);
   const today = localDate(biz.timezone);
   const day = isDate(d) ? d : today;
-  const { data } = await sb.rpc("day_agenda", { p_business: biz.id, p_date: day });
-  const items = (data ?? []) as Item[];
-  const { data: waitData } = await sb.rpc("list_waitlist", { p_business: biz.id });
   const start = addDays(day, -weekday(day));
   const week = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  // The whole week: a list for the chosen day on phones, seven columns on a wide screen.
+  const [agendas, { data: waitData }, { data: hoursRows }] = await Promise.all([
+    Promise.all(week.map((w) => sb.rpc("day_agenda", { p_business: biz.id, p_date: w }).then((r) => (r.data ?? []) as Item[]))),
+    sb.rpc("list_waitlist", { p_business: biz.id }),
+    sb.from("business_hours").select("weekday").eq("business_id", biz.id),
+  ]);
+  const items = agendas[week.indexOf(day)] ?? [];
+  const openDays = new Set(((hoursRows ?? []) as { weekday: number }[]).map((h) => h.weekday));
   return (
     <>
-      <main className="page">
+      <main className="page page-cal">
         <div className="top"><h1 className="h1">{t("cal.title")}</h1>
           {day !== today && <Link className="chip" href={`/b/${slug}/calendar`}>{t("cal.today")}</Link>}</div>
         <div className="row" style={{ justifyContent: "space-between" }}>
@@ -34,6 +39,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
           <span className="muted small">{t(`day.${weekday(day)}` as MessageKey)} {dayNum(day)}.{Number(day.slice(5, 7))}</span>
           <Link className="chip" href={`/b/${slug}/calendar?d=${addDays(start, 7)}`} aria-label={t("cal.next")}><Icon n="chev" size={16} /></Link>
         </div>
+        <div className="day-list">
         <div className="days">
           {week.map((w) => (
             <Link key={w} href={`/b/${slug}/calendar?d=${w}`} className={`day ${w === day ? "day-on" : ""}`} aria-current={w === day ? "date" : undefined}>
@@ -41,10 +47,30 @@ export default async function CalendarPage({ params, searchParams }: { params: P
             </Link>
           ))}
         </div>
+        </div>
         <div className="row">
           <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?d=${day}`}><Icon n="calendarPlus" />{t("cal.new_appt")}</Link>
           <Link className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/class`}><Icon n="repeat" />{t("cal.new_class")}</Link>
         </div>
+        <div className="week" aria-label={t("cal.week")}>
+          {week.map((w, i) => (
+            <div key={w} className="week-col">
+              <Link href={`/b/${slug}/calendar?d=${w}`} className={`week-head ${w === day ? "on" : ""} ${openDays.size && !openDays.has(weekday(w)) ? "closed" : ""}`} aria-current={w === today ? "date" : undefined}>
+                {t(`day.${weekday(w)}` as MessageKey)}<b>{dayNum(w)}.{Number(w.slice(5, 7))}</b>
+              </Link>
+              {agendas[i].length === 0 && <span className="week-empty">{w === today ? t("cal.today") : "·"}</span>}
+              {agendas[i].map((s) => (
+                <Link key={s.id} href={`/b/${slug}/calendar/s/${s.id}`} className={`week-item ${s.capacity > 1 ? "class-item" : ""}`}>
+                  <b>{fmtTime(s.starts_at, biz.timezone)}</b>
+                  <span>{s.offering}</span>
+                  <span className="muted">{s.capacity > 1 ? `${s.booked}/${s.capacity}` : s.people[0] ?? ""}</span>
+                </Link>
+              ))}
+              {w >= today && <Link className="week-add" href={`/b/${slug}/calendar/new?d=${w}`} aria-label={`${t("cal.new_appt")} ${dayNum(w)}.${Number(w.slice(5, 7))}`}><Icon n="plus" size={16} /></Link>}
+            </div>
+          ))}
+        </div>
+        <div className="day-list">
         {items.length === 0 && <div className="card"><Empty n="sun" text={t("cal.empty")} /></div>}
         {items.map((s) => (
           <Link key={s.id} href={`/b/${slug}/calendar/s/${s.id}`} className="session">
@@ -59,6 +85,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
             </span>
           </Link>
         ))}
+        </div>
         <WaitlistCard slug={slug} timezone={biz.timezone} entries={(waitData ?? []) as WaitEntry[]} date={day} />
       </main>
       <OwnerNav slug={slug} active="calendar" />

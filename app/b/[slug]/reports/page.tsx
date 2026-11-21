@@ -34,7 +34,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const totalVisits = v ? v.attended + v.no_show : 0;
   return (
     <>
-      <main className="page">
+      <main className="page page-wide">
         <Back href={`/b/${slug}/money`} label={t("nav.money")} />
         <h1 className="h1">{t("rep.title")}</h1>
         <div className="chips">
@@ -49,6 +49,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <div className="kpi"><span className="kpi-label"><Icon n="userPlus" size={15} />{t("rep.new_people")}</span><b>{rep.people.new}</b></div>
             </div>
 
+<div className="cols">
             <section className="card">
               <Title n="trend">{t("rep.months")}</Title>
               {rep.months.length === 0 ? <Empty n="money" text={t("rep.empty")} /> : (
@@ -96,6 +97,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 <a className="btn btn-secondary btn-small" href={`/b/${slug}/export/clients`}><Icon n="download" />{t("rep.export.clients")}</a>
               </div>
             </section>
+</div>
           </>
         )}
       </main>

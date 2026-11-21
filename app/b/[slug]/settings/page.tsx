@@ -30,8 +30,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
   const onOff = (on: boolean) => <span className={`tag ${on ? "tag-good" : ""}`}>{on ? t("set.on") : t("set.off")}</span>;
   return (
     <>
-      <main className="page">
+      <main className="page page-wide">
         <h1 className="h1">{t("set.title")}</h1>
+<div className="cols">
         <BusinessForm business={biz.id} name={biz.name} slug={biz.slug} />
         <section className="card" style={{ gap: 0 }}>
           <Title n="calendar" style={{ marginBottom: 4 }}>{t("set.schedule")}</Title>
@@ -57,6 +58,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
           <div className="row"><IconTile n="mail" tone="plain" /><span className="grow muted small input-ltr" style={{ textAlign: "start" }}>{user?.email}</span>
             <form action="/auth/signout" method="post"><button className="btn btn-secondary btn-small"><Icon n="logout" />{t("nav.signout")}</button></form></div>
         </section>
+</div>
       </main>
       <OwnerNav slug={slug} active="more" />
     </>

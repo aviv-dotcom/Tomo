@@ -39,7 +39,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
     lines: { type: "charge" | "payment"; id: string; text: string; method?: string; amount: number; void: boolean; at: string }[] };
   return (
     <>
-      <main className="page">
+      <main className="page page-wide">
         <Back href={`/b/${slug}/people`} label={t("back")} />
         <div className="top"><Avatar name={p.name} size={52} /><div className="grow"><h1 className="h1">{p.name}</h1>
           <span className="small"><span className={`tag ${p.status === "active" ? "tag-good" : "tag-warn"}`}>{t(`status.${p.status}` as MessageKey)}</span>
@@ -53,6 +53,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
           <div className="kpi"><span className="kpi-label"><Icon n="check" size={15} />{t("card.visits")}</span><b>{p.visits}</b></div>
           <div className="kpi"><span className="kpi-label"><Icon n="ban" size={15} />{t("card.noshows")}</span><b>{p.no_shows}</b></div>
         </div>
+<div className="cols">
         <section className="card" style={{ gap: 0 }}>
           <Title n="calendar" style={{ marginBottom: 6 }}>{t("card.history")}</Title>
           {p.bookings.length === 0 && <Empty n="calendar" text={t("card.history.empty")} />}
@@ -138,6 +139,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
             <ForgetButton id={p.id} slug={slug} />
           </div>
         </section>
+</div>
       </main>
       <OwnerNav slug={slug} active="people" />
     </>

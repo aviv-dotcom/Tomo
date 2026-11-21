@@ -23,12 +23,13 @@ export default async function MoneyPage({ params }: { params: Promise<{ slug: st
   const remind = (name: string, amount: number) => t("money.remind.msg").replace("{name}", name.split(" ")[0]).replace("{amount}", shekels(amount)).replace("{business}", biz.name);
   return (
     <>
-      <main className="page">
+      <main className="page page-wide">
         <div className="top"><h1 className="h1">{t("money.title")}</h1><span className="row" style={{ gap: 6 }}><Link className="btn btn-secondary btn-small" href={`/b/${slug}/orders`}><Icon n="tag" />{t("order.list")}</Link><Link className="btn btn-secondary btn-small" href={`/b/${slug}/reports`}><Icon n="trend" />{t("rep.title")}</Link></span></div>
         <div className="kpis">
           <div className="kpi"><span className="kpi-label"><Icon n="trend" size={15} />{t("money.collected")}</span><b>{shekels(m.collected_month)}</b></div>
           <div className="kpi"><span className="kpi-label"><Icon n="alert" size={15} />{t("money.debt")}</span><b>{shekels(debt)}</b></div>
         </div>
+<div className="cols">
         <section className="card" style={{ gap: 0 }}>
           <Title n="alert" style={{ marginBottom: 6 }}>{t("money.debtors")}</Title>
           {m.debtors.length === 0 && <Empty n="check" text={t("money.nodebt")} />}
@@ -53,6 +54,7 @@ export default async function MoneyPage({ params }: { params: Promise<{ slug: st
             </Link>
           ))}
         </section>
+</div>
       </main>
       <OwnerNav slug={slug} active="money" />
     </>

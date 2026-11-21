@@ -73,7 +73,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
 
   return (
     <>
-      <main className="page">
+      <main className="page page-wide">
         <div className="top">
           <div className="grow">
             <h1 className="h1">{d.business.name}</h1>
@@ -93,6 +93,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           <Link className="kpi link-row" href={`/b/${d.business.slug}/money`}><span className="kpi-label"><Icon n="money" size={15} />{t("today.kpi.collected")}</span><b>{shekels(d.counts.collected_month)}</b></Link>
         </div>
 
+<div className="cols">
         <section className="card">
           <Title n="inbox" extra={inbox.length > 0 ? <span className="tag">{inbox.length}</span> : undefined}>{t("today.waiting.title")}</Title>
           {inbox.length === 0 && <Empty n="check" text={t("today.waiting.empty")} />}
@@ -165,6 +166,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
             </Link>
           ))}
         </section>
+</div>
       </main>
       <OwnerNav slug={d.business.slug} active="today" />
     </>
