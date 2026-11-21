@@ -19,7 +19,7 @@ export type PageData = {
   hours: { weekday: number; start: number; end: number }[];
   offerings: { id: string; name: string; delivery: string; billing: string; minutes: number | null; priceAgorot: number }[];
   addons?: Addon[];
-  providers?: { id: string; name: string; color: string; offerings: string[] | null }[];
+  providers?: { id: string; name: string; color: string; offerings: string[] | null; bio?: string | null; photo?: string | null }[];
   classes: { id: string; offering_id: string; offering: string; starts_at: string; location: string | null; left: number }[];
 };
 
@@ -70,6 +70,18 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
             {c.left > 0
               ? <Link className="btn btn-primary btn-small" href={`/p/${p.slug}/book?s=${c.id}`}>{t("pub.join")}</Link>
               : <Link className="btn btn-secondary btn-small" href={`/p/${p.slug}/book?s=${c.id}&w=1`}><Icon n="clock" />{t("pub.waitlist")}</Link>}
+          </div>
+        ))}
+      </section>
+    ),
+    team: (p.providers ?? []).some((x) => x.photo || x.bio) && (
+      <section key="team" className="card" style={{ gap: 0 }}>
+        <Title n="users" style={{ marginBottom: 6 }}>{t("pub.team")}</Title>
+        {(p.providers ?? []).map((x) => (
+          <div key={x.id} className="list-row">
+            {x.photo ? <img src={mediaUrl(x.photo) ?? ""} alt="" className="prov-photo" style={{ width: 52, height: 52 }} loading="lazy" />
+              : <span className="avatar" style={{ width: 52, height: 52, background: x.color, color: "#fff", fontSize: 20 }}>{x.name.slice(0, 1)}</span>}
+            <span className="grow"><b>{x.name}</b>{x.bio && <span className="muted small">{x.bio}</span>}</span>
           </div>
         ))}
       </section>

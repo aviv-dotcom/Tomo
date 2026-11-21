@@ -10,7 +10,7 @@ import { PublicPageView, type PageData } from "@/components/PublicPageView";
 import { removeMedia, saveSite, uploadMedia, type SiteState } from "./actions";
 
 const t = translator("he");
-const SECTION_ICON: Record<PageSection, IconName> = { services: "tag", classes: "calendar", gallery: "image", about: "info", hours: "clock", contact: "chat" };
+const SECTION_ICON: Record<PageSection, IconName> = { services: "tag", team: "users", classes: "calendar", gallery: "image", about: "info", hours: "clock", contact: "chat" };
 const MAX: Record<"logo" | "cover" | "gallery_add", number> = { logo: 512, cover: 1600, gallery_add: 1400 };
 
 type Props = { business: string; slug: string; back: { key: string; label: string }; published: boolean; base: PageData };

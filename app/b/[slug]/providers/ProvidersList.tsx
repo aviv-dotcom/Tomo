@@ -4,6 +4,7 @@ import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { minToTime } from "@/lib/time";
 import { Icon } from "@/components/Icon";
+import { mediaUrl } from "@/lib/media";
 import { ProviderForm, type Provider } from "./ProviderForm";
 
 const t = translator("he");
@@ -24,8 +25,9 @@ export function ProvidersList({ business, slug, providers, offerings }: { busine
         ) : (
           <button key={p.id} type="button" className="list-row link-row" onClick={() => setEditing(p.id)}
             style={{ width: "100%", background: "none", border: 0, borderBottom: "1px solid var(--line)", textAlign: "start", cursor: "pointer", opacity: p.active ? 1 : 0.5 }}>
-            <span className="avatar" style={{ background: p.color, color: "#fff" }}>{p.name.slice(0, 1)}</span>
-            <span className="grow"><b>{p.name}</b>{summary(p).map((x, i) => <span key={i} className="muted small">{x}</span>)}</span>
+            {p.photo ? <img src={mediaUrl(p.photo) ?? ""} alt="" className="prov-photo" style={{ width: 40, height: 40, boxShadow: `0 0 0 2px ${p.color}` }} />
+              : <span className="avatar" style={{ background: p.color, color: "#fff" }}>{p.name.slice(0, 1)}</span>}
+            <span className="grow"><b>{p.name}</b>{p.bio && <span className="small">{p.bio}</span>}{summary(p).map((x, i) => <span key={i} className="muted small">{x}</span>)}</span>
             {!p.active && <span className="tag tag-warn">{t("prov.off")}</span>}
             <Icon n="edit" size={16} className="chev" />
           </button>

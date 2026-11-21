@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useActionState, useEffect, useState, useTransition } from "react";
+import { mediaUrl } from "@/lib/media";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { addDays, dayNum, fmtDate, fmtTime, weekday } from "@/lib/time";
@@ -12,7 +13,7 @@ import { FONT_VARS, pageStyle } from "@/lib/fonts";
 import { shekels } from "@/lib/format";
 
 const t = translator("he");
-type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; look: { accent?: string | null; font_heading?: string | null; font_body?: string | null; text_size?: string | null }; addons: Addon[]; providers: { id: string; name: string; color: string }[];
+type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; look: { accent?: string | null; font_heading?: string | null; font_body?: string | null; text_size?: string | null }; addons: Addon[]; providers: { id: string; name: string; color: string; bio?: string | null; photo?: string | null }[];
   offering: { id: string; name: string; minutes: number | null; priceAgorot: number } | null;
   session: { id: string; name: string; starts_at: string; location: string | null } | null };
 
@@ -108,9 +109,18 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
             <button type="button" role="radio" aria-checked={!provider} className={`chip ${!provider ? "chip-on" : ""}`} onClick={() => setProvider("")}>{t("prov.any")}</button>
             {providers.map((p) => (
               <button key={p.id} type="button" role="radio" aria-checked={provider === p.id} className={`chip ${provider === p.id ? "chip-on" : ""}`} onClick={() => setProvider(p.id)}>
-                <span className="dot-color" style={{ background: p.color }} />{p.name}</button>
+                {p.photo ? <img src={mediaUrl(p.photo) ?? ""} alt="" className="prov-photo" style={{ width: 24, height: 24, marginInlineStart: -4 }} /> : <span className="dot-color" style={{ background: p.color }} />}{p.name}</button>
             ))}
           </div>
+          {(() => {
+            const sel = providers.find((x) => x.id === provider);
+            return sel && (sel.bio || sel.photo) ? (
+              <div className="prov-card">
+                {sel.photo && <img src={mediaUrl(sel.photo) ?? ""} alt="" className="prov-photo" style={{ width: 56, height: 56 }} />}
+                <span className="grow"><b>{sel.name}</b>{sel.bio && <span className="muted small" style={{ display: "block" }}>{sel.bio}</span>}</span>
+              </div>
+            ) : null;
+          })()}
         </section>
       )}
 

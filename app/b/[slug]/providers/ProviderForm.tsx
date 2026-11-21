@@ -1,15 +1,16 @@
 "use client";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { minToTime } from "@/lib/time";
-import { ACCENTS } from "@/lib/media";
+import { ACCENTS, mediaUrl } from "@/lib/media";
+import { shrinkImage } from "@/lib/resize";
 import { TimeSelect } from "@/components/TimeSelect";
 import { Icon } from "@/components/Icon";
 import { saveProvider, type ProviderState } from "./actions";
 
 const t = translator("he");
-export type Provider = { id: string; name: string; color: string; active: boolean; offerings: string[] | null; hours: { weekday: number; start: number; end: number }[] | null };
+export type Provider = { id: string; name: string; color: string; active: boolean; bio: string | null; photo: string | null; offerings: string[] | null; hours: { weekday: number; start: number; end: number }[] | null };
 
 /** Add or edit one person who takes appointments: name, colour, services and hours. */
 export function ProviderForm({ business, slug, offerings, provider, onDone }: {
@@ -21,6 +22,22 @@ export function ProviderForm({ business, slug, offerings, provider, onDone }: {
   const [own, setOwn] = useState(!!provider?.hours);
   const [open, setOpen] = useState<boolean[]>(() => [0, 1, 2, 3, 4, 5, 6].map((d) => provider?.hours ? provider.hours.some((h) => h.weekday === d) : d <= 4));
   useEffect(() => { if (state?.ok) onDone?.(); }, [state?.ok, onDone]);
+  // The photo is shrunk on the phone and placed back into the file field, so it goes with the form on save.
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(mediaUrl(provider?.photo ?? null));
+  const [removePhoto, setRemovePhoto] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  async function pickPhoto(file: File | undefined) {
+    if (!file || !fileInput.current) return;
+    setPhotoBusy(true);
+    try {
+      const blob = await shrinkImage(file, 600);
+      const small = new File([blob], "photo.jpg", { type: "image/jpeg" });
+      const dt = new DataTransfer(); dt.items.add(small); fileInput.current.files = dt.files;
+      setPreview(URL.createObjectURL(small)); setRemovePhoto(false);
+    } catch { fileInput.current.value = ""; }
+    setPhotoBusy(false);
+  }
   const h = (d: number) => provider?.hours?.find((x) => x.weekday === d);
   return (
     <form action={action} className="card" style={{ gap: 12 }}>
@@ -29,6 +46,18 @@ export function ProviderForm({ business, slug, offerings, provider, onDone }: {
       <input type="hidden" name="color" value={color} />
       <label className="field"><span className="label">{t("prov.name")}</span>
         <input className="input" name="name" required minLength={2} maxLength={40} defaultValue={provider?.name} placeholder={t("prov.name.ph")} /></label>
+      <div className="field"><span className="label">{t("prov.photo")}</span>
+        <div className="row" style={{ gap: 12 }}>
+          {preview ? <img src={preview} alt="" className="prov-photo" style={{ width: 64, height: 64 }} />
+            : <span className="avatar" style={{ width: 64, height: 64, fontSize: 24, background: color, color: "#fff" }}>{provider?.name.slice(0, 1) ?? <Icon n="user" />}</span>}
+          <input ref={fileInput} type="file" name="photo" accept="image/*" hidden onChange={(e) => pickPhoto(e.target.files?.[0])} />
+          <button type="button" className="btn btn-secondary btn-small" disabled={photoBusy} onClick={() => fileInput.current?.click()}><Icon n="image" />{photoBusy ? t("design.uploading") : preview ? t("prov.photo.change") : t("prov.photo.add")}</button>
+          {preview && <button type="button" className="link-btn small" onClick={() => { setPreview(null); setRemovePhoto(true); if (fileInput.current) fileInput.current.value = ""; }}>{t("prov.photo.remove")}</button>}
+          {removePhoto && <input type="hidden" name="remove_photo" value="1" />}
+        </div></div>
+      <label className="field"><span className="label">{t("prov.bio")}</span>
+        <input className="input" name="bio" maxLength={160} defaultValue={provider?.bio ?? ""} placeholder={t("prov.bio.ph")} />
+        <span className="muted small">{t("prov.bio.hint")}</span></label>
       <div className="field"><span className="label">{t("prov.color")}</span>
         <div className="swatches" role="radiogroup" aria-label={t("prov.color")}>
           {ACCENTS.map((c) => <button key={c} type="button" role="radio" aria-checked={color === c} aria-label={c} className="swatch" style={{ background: c }} onClick={() => setColor(c)}>{color === c && <Icon n="check" size={16} />}</button>)}
