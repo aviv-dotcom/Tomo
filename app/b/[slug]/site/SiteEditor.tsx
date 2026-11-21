@@ -3,6 +3,7 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import { translator } from "@/lib/i18n";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { ACCENTS, mediaUrl, PAGE_SECTIONS, type PageSection } from "@/lib/media";
+import { FONT_VARS, PAGE_FONTS } from "@/lib/fonts";
 import { shrinkImage } from "@/lib/resize";
 import { Icon, IconTile, Title, type IconName } from "@/components/Icon";
 import { PublicPageView, type PageData } from "@/components/PublicPageView";
@@ -106,6 +107,34 @@ export function SiteEditor({ business, slug, back, published: initialPublished, 
           {mediaError && <p className="error" role="alert">{t(mediaError)}</p>}
         </section>
 
+        <section className={`card ${FONT_VARS}`}>
+          <Title n="edit">{t("font.title")}</Title>
+          <span className="label">{t("font.heading")}</span>
+          <div className="font-pick" role="radiogroup" aria-label={t("font.heading")}>
+            {PAGE_FONTS.map((f) => (
+              <button key={f.key} type="button" role="radio" aria-checked={(draft.font_heading ?? "rubik") === f.key} className="font-opt" onClick={() => set({ font_heading: f.key })}>
+                <b style={{ fontFamily: f.family }}>{draft.name.split(" ")[0] || "אבג"}</b><span>{f.name}</span>
+              </button>
+            ))}
+          </div>
+          <span className="label">{t("font.body")}</span>
+          <div className="font-pick" role="radiogroup" aria-label={t("font.body")}>
+            {PAGE_FONTS.filter((f) => !f.display).map((f) => (
+              <button key={f.key} type="button" role="radio" aria-checked={(draft.font_body ?? "rubik") === f.key} className="font-opt" onClick={() => set({ font_body: f.key })}>
+                <b style={{ fontFamily: f.family, fontSize: 15, fontWeight: 400 }}>{t("font.sample")}</b><span>{f.name}</span>
+              </button>
+            ))}
+          </div>
+          <span className="label">{t("font.size")}</span>
+          <div className="size-pick" role="radiogroup" aria-label={t("font.size")}>
+            {(["s", "m", "l"] as const).map((z) => (
+              <button key={z} type="button" role="radio" aria-checked={(draft.text_size ?? "m") === z} className="font-opt" onClick={() => set({ text_size: z })}>
+                <b style={{ fontSize: z === "s" ? 15 : z === "m" ? 18 : 22 }}>אב</b><span>{t(`font.size.${z}`)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="card">
           <Title n="image" extra={<span className="muted small">{draft.gallery.length}/9</span>}>{t("design.gallery")}</Title>
           <p className="muted small" style={{ margin: 0 }}>{t("design.gallery.hint")}</p>
@@ -133,6 +162,9 @@ export function SiteEditor({ business, slug, back, published: initialPublished, 
           <input type="hidden" name="business" value={business} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="back" value={back.key} />
           <input type="hidden" name="published" value={published ? "on" : ""} />
           <input type="hidden" name="accent" value={draft.accent ?? ""} />
+          <input type="hidden" name="font_heading" value={draft.font_heading ?? "rubik"} />
+          <input type="hidden" name="font_body" value={draft.font_body ?? "rubik"} />
+          <input type="hidden" name="text_size" value={draft.text_size ?? "m"} />
           <input type="hidden" name="sections" value={JSON.stringify(sections)} />
           <Title n="edit">{t("site.content")}</Title>
           <label className="field"><span className="label">{t("site.tagline")}</span>

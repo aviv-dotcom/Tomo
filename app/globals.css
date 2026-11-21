@@ -282,3 +282,15 @@ img.pub-logo { background: var(--surface); }
 .week-add { display: flex; justify-content: center; align-items: center; min-height: 32px; border-radius: 10px; border: 1.5px dashed var(--line); color: var(--ink-2); text-decoration: none; }
 .week-add:hover { color: var(--accent); border-color: var(--accent); }
 .dot-color { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-inline-end: 6px; flex: none; }
+
+/* Business page lettering: chosen fonts and text size */
+.pub-font { font-family: var(--pub-body, inherit), var(--font-body), system-ui, sans-serif; zoom: var(--pub-zoom, 1); }
+.pub-font :is(.h1, .card-title, h2, .title-in, .pub-logo.hero-mark) { font-family: var(--pub-head, inherit), var(--font-body), system-ui, sans-serif; }
+.pub-font .input, .pub-font .btn, .pub-font button, .pub-font select { font-family: inherit; }
+.font-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.font-opt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; color: var(--ink); }
+.font-opt b { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.font-opt span { font-size: 11px; color: var(--ink-2); font-family: var(--font-body), system-ui, sans-serif; }
+.font-opt[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.size-pick { display: flex; gap: 8px; }
+.size-pick .font-opt { flex: 1; }

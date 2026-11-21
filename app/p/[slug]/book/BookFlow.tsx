@@ -8,14 +8,15 @@ import { publicBook, publicSlots, publicWaitlist, type BookState, type WaitState
 import { Back, Icon, Title } from "@/components/Icon";
 import type { Addon } from "@/components/PublicPageView";
 import { AddToCalendar } from "@/components/AddToCalendar";
+import { FONT_VARS, pageStyle } from "@/lib/fonts";
 import { shekels } from "@/lib/format";
 
 const t = translator("he");
-type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; addons: Addon[]; providers: { id: string; name: string; color: string }[];
+type Props = { slug: string; name: string; timezone: string; today: string; startDay: string; waitlist: boolean; accent: string | null; look: { accent?: string | null; font_heading?: string | null; font_body?: string | null; text_size?: string | null }; addons: Addon[]; providers: { id: string; name: string; color: string }[];
   offering: { id: string; name: string; minutes: number | null; priceAgorot: number } | null;
   session: { id: string; name: string; starts_at: string; location: string | null } | null };
 
-export function BookFlow({ slug, name, timezone, today, startDay, waitlist, accent, addons, providers, offering, session }: Props) {
+export function BookFlow({ slug, name, timezone, today, startDay, waitlist, accent, look, addons, providers, offering, session }: Props) {
   const [state, action, pending] = useActionState<BookState, FormData>(publicBook, null);
   const [wState, wAction, wPending] = useActionState<WaitState, FormData>(publicWaitlist, null);
   const [wait, setWait] = useState(waitlist);
@@ -30,7 +31,8 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
   const chosen = addons.filter((a) => picked.includes(a.id));
   const total = (offering?.priceAgorot ?? 0) + chosen.reduce((n, a) => n + a.priceAgorot, 0);
   const minutes = (offering?.minutes ?? 0) + chosen.reduce((n, a) => n + (a.delivery === "addon" ? a.minutes ?? 0 : 0), 0);
-  const style = accent ? ({ "--accent": accent, "--accent-soft": `color-mix(in srgb, ${accent} 13%, var(--surface))` } as React.CSSProperties) : undefined;
+  const style = pageStyle(look);
+  void accent;
 
   useEffect(() => {
     if (!offering) return;
@@ -42,7 +44,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
     const when = wState.done.starts_at ? `${fmtDate(wState.done.starts_at, timezone)} · ${fmtTime(wState.done.starts_at, timezone)}`
       : `${wState.done.date ? fmtDate(`${wState.done.date}T12:00:00Z`, timezone) : ""} · ${t(`part.${wState.done.part ?? "any"}` as MessageKey)}`;
     return (
-      <main className="page" style={{ paddingTop: 48, ...style }}>
+      <main className={`page pub-font ${FONT_VARS}`} style={{ paddingTop: 48, ...style }}>
         <span className="hero-mark" aria-hidden="true"><Icon n="clock" size={32} /></span>
         <h1 className="h1">{t("wait.done.title")}</h1>
         <div className="card"><b>{wState.done.offering}</b><span className="meta"><Icon n="calendar" size={15} />{when}</span><span className="muted">{name}</span></div>
@@ -58,7 +60,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
 
   if (state?.done) {
     return (
-      <main className="page" style={{ paddingTop: 48, ...style }}>
+      <main className={`page pub-font ${FONT_VARS}`} style={{ paddingTop: 48, ...style }}>
         <span className="hero-mark" style={{ background: "var(--good)" }} aria-hidden="true"><Icon n="check" size={32} /></span>
         <h1 className="h1">{t("pubbook.done.title")}</h1>
         <div className="card">
@@ -77,7 +79,7 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
   }
 
   return (
-    <main className="page" style={{ paddingBottom: 40, ...style }}>
+    <main className={`page pub-font ${FONT_VARS}`} style={{ paddingBottom: 40, ...style }}>
       <Back href={`/p/${slug}`} label={name} />
       <h1 className="h1">{wait ? t("wait.title") : offering ? t("pubbook.title") : t("pubbook.join.title")}</h1>
       {wait && <p className="sub">{session ? t("wait.class.sub") : t("wait.sub")}</p>}

@@ -35,6 +35,8 @@ export async function saveSite(_p: SiteState, f: FormData): Promise<SiteState> {
     p_tiktok: handle(s("tiktok"), /tiktok\.com/i), p_website: website, p_sections: sections,
   });
   if (dErr) return { error: /instagram_check|facebook_check|tiktok_check|website_check/.test(dErr.message) ? "err.invalid_social" : errorKey(dErr.message) };
+  const { error: fErr } = await sb.rpc("set_page_fonts", { p_business: s("business"), p_heading: s("font_heading"), p_body: s("font_body"), p_size: s("text_size") });
+  if (fErr) return { error: errorKey(fErr.message) };
   revalidatePath(`/b/${s("slug")}`, "layout"); revalidatePath(`/p/${s("slug")}`);
   redirect(savedUrl(s("slug"), s("back"), "site"));
 }

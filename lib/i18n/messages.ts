@@ -773,6 +773,14 @@ export const he = {
   "err.too_many_providers": "אפשר עד 30 אנשים",
   "err.invalid_offering": "אחד השירותים לא נמצא",
   "err.invalid_hours": "השעות לא תקינות",
+  "font.title": "גופנים וגודל טקסט",
+  "font.heading": "גופן לכותרות",
+  "font.body": "גופן לטקסט",
+  "font.sample": "תורים בקלות",
+  "font.size": "גודל טקסט",
+  "font.size.s": "קטן",
+  "font.size.m": "רגיל",
+  "font.size.l": "גדול",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -1544,4 +1552,12 @@ export const en: Record<MessageKey, string> = {
   "err.too_many_providers": "Up to 30 people",
   "err.invalid_offering": "One of the services wasn't found",
   "err.invalid_hours": "The hours are invalid",
+  "font.title": "Fonts and text size",
+  "font.heading": "Heading font",
+  "font.body": "Text font",
+  "font.sample": "Easy booking",
+  "font.size": "Text size",
+  "font.size.s": "Small",
+  "font.size.m": "Regular",
+  "font.size.l": "Large",
 };

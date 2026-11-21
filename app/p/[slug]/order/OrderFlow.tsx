@@ -5,21 +5,23 @@ import { translator } from "@/lib/i18n";
 import { shekels } from "@/lib/format";
 import { Back, Icon, Title } from "@/components/Icon";
 import { publicOrder, type OrderState } from "../book/actions";
+import { FONT_VARS, pageStyle } from "@/lib/fonts";
 
 const t = translator("he");
 type Product = { id: string; name: string; priceAgorot: number };
 
-export function OrderFlow({ slug, name, accent, products, start }: { slug: string; name: string; accent: string | null; products: Product[]; start: string | null }) {
+export function OrderFlow({ slug, name, accent, look, products, start }: { slug: string; name: string; accent: string | null; look: { accent?: string | null; font_heading?: string | null; font_body?: string | null; text_size?: string | null }; products: Product[]; start: string | null }) {
   const [state, action, pending] = useActionState<OrderState, FormData>(publicOrder, null);
   const [qty, setQty] = useState<Record<string, number>>(start ? { [start]: 1 } : {});
   const set = (id: string, n: number) => setQty((q) => ({ ...q, [id]: Math.max(0, Math.min(20, n)) }));
   const lines = products.filter((p) => (qty[p.id] ?? 0) > 0);
   const total = lines.reduce((s, p) => s + p.priceAgorot * qty[p.id], 0);
-  const style = accent ? ({ "--accent": accent, "--accent-soft": `color-mix(in srgb, ${accent} 13%, var(--surface))` } as React.CSSProperties) : undefined;
+  const style = pageStyle(look);
+  void accent;
 
   if (state?.done) {
     return (
-      <main className="page" style={{ paddingTop: 48, ...style }}>
+      <main className={`page pub-font ${FONT_VARS}`} style={{ paddingTop: 48, ...style }}>
         <span className="hero-mark" style={{ background: "var(--good)" }} aria-hidden="true"><Icon n="check" size={32} /></span>
         <h1 className="h1">{t("order.done.title")}</h1>
         <div className="card">
@@ -33,7 +35,7 @@ export function OrderFlow({ slug, name, accent, products, start }: { slug: strin
     );
   }
   return (
-    <main className="page" style={{ paddingBottom: 40, ...style }}>
+    <main className={`page pub-font ${FONT_VARS}`} style={{ paddingBottom: 40, ...style }}>
       <Back href={`/p/${slug}`} label={name} />
       <h1 className="h1">{t("order.title")}</h1>
       <p className="sub">{t("order.sub")}</p>

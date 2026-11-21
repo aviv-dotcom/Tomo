@@ -4,6 +4,7 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels, whatsappLink } from "@/lib/format";
 import { fmtDate, fmtTime, minToTime } from "@/lib/time";
 import { mediaUrl, PAGE_SECTIONS } from "@/lib/media";
+import { FONT_VARS, pageStyle } from "@/lib/fonts";
 import { Icon, IconTile, Title } from "@/components/Icon";
 
 const t = translator("he");
@@ -13,7 +14,7 @@ export type Addon = { id: string; name: string; delivery: string; minutes: numbe
 export type PageData = {
   name: string; slug: string; timezone: string; vocabulary?: Record<string, string>;
   tagline: string | null; about: string | null; whatsapp: string | null; address: string | null;
-  accent: string | null; logo: string | null; cover: string | null; gallery: string[];
+  accent: string | null; font_heading?: string | null; font_body?: string | null; text_size?: string | null; logo: string | null; cover: string | null; gallery: string[];
   instagram: string | null; facebook: string | null; tiktok: string | null; website: string | null; sections: string[] | null;
   hours: { weekday: number; start: number; end: number }[];
   offerings: { id: string; name: string; delivery: string; billing: string; minutes: number | null; priceAgorot: number }[];
@@ -32,7 +33,7 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
   const classIds = new Set(p.classes.map((c) => c.offering_id));
   const sections = (p.sections ?? [...PAGE_SECTIONS]).filter((s): s is (typeof PAGE_SECTIONS)[number] => (PAGE_SECTIONS as readonly string[]).includes(s));
   const logo = mediaUrl(p.logo), cover = mediaUrl(p.cover);
-  const style = p.accent ? ({ "--accent": p.accent } as React.CSSProperties) : undefined;
+  const style = pageStyle(p);
   const bookable = p.offerings.some((o) => o.delivery === "appointment");
   const socials = [
     p.instagram && { n: "instagram" as const, href: `https://instagram.com/${p.instagram}`, label: "Instagram" },
@@ -119,7 +120,7 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
   };
 
   return (
-    <div className={`pub ${preview ? "pub-preview" : ""}`} style={style} inert={preview || undefined}>
+    <div className={`pub pub-font ${FONT_VARS} ${preview ? "pub-preview" : ""}`} style={style} inert={preview || undefined}>
       <header className={`pub-hero ${cover ? "has-cover" : ""}`}>
         {cover && <img className="pub-cover" src={cover} alt="" />}
         {logo ? <img className="pub-logo" src={logo} alt="" /> : <span className="hero-mark pub-logo" aria-hidden="true">{p.name.slice(0, 1)}</span>}

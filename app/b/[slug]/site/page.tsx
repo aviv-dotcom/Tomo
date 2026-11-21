@@ -27,7 +27,7 @@ export default async function SitePage({ params, searchParams }: { params: Promi
   const base: PageData = {
     name: biz.name, slug, timezone: biz.timezone,
     tagline: pg?.tagline ?? null, about: pg?.about ?? null, whatsapp: pg?.whatsapp ?? null, address: pg?.address ?? null,
-    accent: pg?.accent ?? null, logo: pg?.logo_path ?? null, cover: pg?.cover_path ?? null, gallery: (pg?.gallery ?? []) as string[],
+    accent: pg?.accent ?? null, font_heading: pg?.font_heading ?? "rubik", font_body: pg?.font_body ?? "rubik", text_size: pg?.text_size ?? "m", logo: pg?.logo_path ?? null, cover: pg?.cover_path ?? null, gallery: (pg?.gallery ?? []) as string[],
     instagram: pg?.instagram ?? null, facebook: pg?.facebook ?? null, tiktok: pg?.tiktok ?? null, website: pg?.website ?? null,
     sections: (pg?.sections ?? null) as string[] | null,
     hours: ((hours ?? []) as { weekday: number; start_min: number; end_min: number }[]).map((h) => ({ weekday: h.weekday, start: h.start_min, end: h.end_min })),
