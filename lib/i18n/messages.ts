@@ -737,6 +737,7 @@ export const he = {
   "msg.pass.none": "נגמרו הכניסות",
   "msg.pass.left": "נשארו לך {n} כניסות",
   "msg.pass.until": ", בתוקף עד {date}",
+  "exp.note": "הערה",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -1472,4 +1473,5 @@ export const en: Record<MessageKey, string> = {
   "msg.pass.none": "no entries left",
   "msg.pass.left": "{n} entries left",
   "msg.pass.until": ", valid until {date}",
+  "exp.note": "Note",
 };

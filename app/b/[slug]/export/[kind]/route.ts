@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     if (kind === "payments") {
       const { data } = await sb.from("payments").select("amount_agorot, method, note, paid_at, people(full_name)").eq("business_id", biz.id)
         .gte("paid_at", new Date(lo).toISOString()).lte("paid_at", new Date(hi).toISOString()).order("paid_at");
-      rows = [[t("exp.date"), t("card.name"), t("money.amount"), t("money.method"), t("money.note")],
+      rows = [[t("exp.date"), t("card.name"), t("money.amount"), t("money.method"), t("exp.note")],
         ...((data ?? []) as unknown as { amount_agorot: number; method: string; note: string | null; paid_at: string; people: { full_name: string } | null }[])
           .filter((p) => day(p.paid_at) >= from && day(p.paid_at) <= to)
           .map((p) => [day(p.paid_at), p.people?.full_name ?? "", money(p.amount_agorot), t(`method.${p.method}` as MessageKey), p.note])];
