@@ -1,6 +1,7 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { translator } from "@/lib/i18n";
+import type { MessageKey } from "@/lib/i18n/messages";
 import { shekels } from "@/lib/format";
 import { Icon } from "@/components/Icon";
 import { saveNotes, sellPass, type SaveState } from "./actions";
@@ -24,19 +25,38 @@ export function SellPass({ person, slug, offerings }: { person: string; slug: st
 }
 
 export function NotesForm({ person, notes }: { person: string; notes: string | null }) {
-  const [state, action, pending] = useActionState<SaveState, FormData>(saveNotes, null);
-  const [text, setText] = useState(notes ?? "");
-  const [dirty, setDirty] = useState(false);
-  return (
-    <form action={(fd) => { setDirty(false); action(fd); }} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <input type="hidden" name="person" value={person} />
-      <textarea className="input" name="notes" rows={3} maxLength={2000} value={text} onChange={(e) => { setText(e.target.value); setDirty(true); }}
-        placeholder={t("notes.placeholder")} aria-label={t("notes.title")} style={{ padding: 10, lineHeight: 1.5 }} />
-      <div className="row">
-        <button className="btn btn-secondary btn-small" disabled={pending || !dirty}><Icon n="check" />{t("card.save")}</button>
-        {state?.ok && !pending && !dirty && <span className="muted small" role="status"><Icon n="check" size={15} />{t("card.saved")}</span>}
-        {state?.error && <span className="error" role="alert">{t(state.error)}</span>}
+  const [saved, setSaved] = useState(notes ?? "");
+  const [draft, setDraft] = useState(saved);
+  const [editing, setEditing] = useState(false);
+  const [flash, setFlash] = useState(false);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [pending, start] = useTransition();
+  function save() {
+    const fd = new FormData(); fd.set("person", person); fd.set("notes", draft);
+    start(async () => {
+      const r = await saveNotes(null, fd);
+      if (r?.error) { setError(r.error); return; }
+      setError(null); setSaved(draft.trim()); setEditing(false); setFlash(true); setTimeout(() => setFlash(false), 2500);
+    });
+  }
+  if (editing) return (
+    <div className="visit-note">
+      <textarea className="input" rows={3} maxLength={2000} value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus
+        placeholder={t("notes.placeholder")} aria-label={t("notes.title")} />
+      <div className="row" style={{ gap: 8 }}>
+        <button type="button" className="btn btn-primary btn-small" disabled={pending} onClick={save}><Icon n="check" />{t("card.save")}</button>
+        <button type="button" className="btn btn-secondary btn-small" disabled={pending} onClick={() => { setDraft(saved); setEditing(false); }}>{t("visit.cancel")}</button>
       </div>
-    </form>
+      {error && <span className="error" role="alert">{t(error)}</span>}
+    </div>
   );
+  return saved ? (
+    <div className="visit-text note-text">
+      <p>{saved}</p>
+      <div className="row" style={{ gap: 12 }}>
+        <button type="button" className="link-btn small" onClick={() => { setDraft(saved); setEditing(true); }}><Icon n="edit" size={14} />{t("visit.edit")}</button>
+        {flash && <span className="muted small row" role="status" style={{ gap: 4 }}><Icon n="check" size={14} />{t("card.saved")}</span>}
+      </div>
+    </div>
+  ) : <button type="button" className="visit-empty" onClick={() => { setDraft(""); setEditing(true); }}><Icon n="edit" size={16} />{t("notes.add")}</button>;
 }

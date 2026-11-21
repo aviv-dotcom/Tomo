@@ -92,8 +92,13 @@ export function Empty({ n, text }: { n: IconName; text: React.ReactNode }) {
 }
 
 /** Initials in a circle, for people lists. */
+const AVATAR_HUES = [231, 174, 335, 24, 142, 268, 200, 45];
+
 export function Avatar({ name, size = 38 }: { name: string; size?: number }) {
   const parts = name.trim().split(/\s+/);
   const initials = (parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "");
-  return <span className="avatar" aria-hidden="true" style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}>{initials}</span>;
+  // A steady colour per name, so people are easy to tell apart at a glance.
+  let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const hue = AVATAR_HUES[h % AVATAR_HUES.length];
+  return <span className="avatar" aria-hidden="true" style={{ width: size, height: size, fontSize: Math.round(size * 0.38), background: `hsl(${hue} 70% 93%)`, color: `hsl(${hue} 55% 32%)` }}>{initials}</span>;
 }
