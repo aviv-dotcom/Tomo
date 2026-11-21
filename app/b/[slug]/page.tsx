@@ -9,6 +9,7 @@ import { OwnerNav } from "@/components/OwnerNav";
 import { ActionCard } from "@/components/ActionCard";
 import { loadInbox } from "@/lib/inbox";
 import { WaitlistCard, type WaitEntry } from "@/components/WaitlistCard";
+import { OrdersList, type Order } from "@/components/OrdersList";
 import { Avatar, Empty, Icon, IconTile, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const published = !!pageRow?.published;
   const { data: waitData } = await sb.rpc("list_waitlist", { p_business: biz.id });
   const waiting = (waitData ?? []) as WaitEntry[];
+  const { data: orderData } = await sb.rpc("list_orders", { p_business: biz.id });
+  const openOrders = ((orderData ?? []) as Order[]).filter((o) => o.open);
   // The next days: what is booked, with page bookings from the last two days marked as new.
   const { data: fromTs } = await sb.rpc("cal_at", { p_business: biz.id, p_date: addDays(d.today, 1), p_min: 0 });
   const { data: upRows } = await sb.from("bookings").select("source, created_at, people(full_name), sessions!inner(id, starts_at, capacity, offerings(name))")
@@ -128,6 +131,13 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
             </Link>
           ))}
         </section>
+
+        {openOrders.length > 0 && (
+          <section className="card" style={{ gap: 0 }}>
+            <Title n="tag" style={{ marginBottom: 4 }} extra={<Link className="small" href={`/b/${d.business.slug}/orders`}>{t("order.all")}</Link>}>{t("order.open")}</Title>
+            <OrdersList slug={d.business.slug} timezone={d.business.timezone} orders={openOrders} />
+          </section>
+        )}
 
         <WaitlistCard slug={d.business.slug} timezone={d.business.timezone} entries={waiting} />
 

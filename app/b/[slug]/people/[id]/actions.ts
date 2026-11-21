@@ -26,3 +26,24 @@ export async function forgetPerson(f: FormData): Promise<void> {
   revalidatePath(`/b/${slug}/people`);
   redirect(`/b/${slug}/people`);
 }
+
+export async function sellPass(_p: SaveState, f: FormData): Promise<SaveState> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("sell_pass", { p_person: String(f.get("person") ?? ""), p_offering: String(f.get("offering") ?? "") });
+  if (error) return { error: errorKey(error.message) };
+  revalidatePath(`/b/${String(f.get("slug") ?? "")}/people/${String(f.get("person") ?? "")}`);
+  return { ok: Date.now() };
+}
+
+export async function cancelPass(f: FormData) {
+  const sb = await serverSupabase();
+  await sb.rpc("cancel_pass", { p_pass: String(f.get("pass") ?? "") });
+  revalidatePath(`/b/${String(f.get("slug") ?? "")}/people/${String(f.get("person") ?? "")}`);
+}
+
+export async function saveNotes(_p: SaveState, f: FormData): Promise<SaveState> {
+  const sb = await serverSupabase();
+  const { error } = await sb.rpc("set_person_notes", { p_person: String(f.get("person") ?? ""), p_notes: String(f.get("notes") ?? "") });
+  if (error) return { error: errorKey(error.message) };
+  return { ok: Date.now() };
+}

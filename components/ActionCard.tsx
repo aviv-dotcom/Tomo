@@ -8,7 +8,7 @@ import { forgetFromRequest, resolveAction } from "@/app/b/[slug]/inbox/actions";
 import { Icon, IconTile, type IconName } from "@/components/Icon";
 
 const t = translator("he");
-const KIND_ICON: Record<string, IconName> = { booking_confirm: "check", reminder_24h: "bell", no_show: "ban", missed_you: "heart", session_cancelled: "calendarOff", waitlist_offer: "clock", waitlist_promoted: "users" };
+const KIND_ICON: Record<string, IconName> = { booking_confirm: "check", reminder_24h: "bell", no_show: "ban", missed_you: "heart", session_cancelled: "calendarOff", waitlist_offer: "clock", waitlist_promoted: "users", pass_ending: "receipt", new_order: "tag" };
 
 /** One prepared message. Sending opens WhatsApp with the text ready; nothing is sent without the owner's tap. */
 export function ActionCard({ action, text, slug }: { action: Action; text: string; slug: string }) {

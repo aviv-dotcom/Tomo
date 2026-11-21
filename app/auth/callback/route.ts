@@ -8,7 +8,13 @@ export async function GET(request: NextRequest) {
   if (code) {
     const sb = await serverSupabase();
     const { error } = await sb.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL("/", url.origin));
+    if (!error) {
+      // Back to an invitation if the sign-in started there; only our own join pages are accepted.
+      const next = decodeURIComponent(request.cookies.get("tomo_next")?.value ?? "");
+      const res = NextResponse.redirect(new URL(/^\/join\/[0-9a-f-]{36}$/i.test(next) ? next : "/", url.origin));
+      res.cookies.delete("tomo_next");
+      return res;
+    }
   }
   return NextResponse.redirect(new URL("/login?error=callback", url.origin));
 }

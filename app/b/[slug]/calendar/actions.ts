@@ -27,6 +27,16 @@ export async function bookAppointment(_p: FormState, f: FormData): Promise<FormS
     startsAt = data as string;
   }
   if (!startsAt) return { error: "appt.slots" as MessageKey };
+  const addons = f.getAll("addon").map(String).filter(Boolean);
+  const weeks = Number(str(f, "weeks") || 0);
+  if (!force && f.get("repeat") === "on" && weeks >= 2) {
+    // The same time every week; weeks that are taken are skipped and reported.
+    const { data, error } = await sb.rpc("book_appointment_series", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"),
+      p_first: startsAt, p_weeks: weeks, p_addons: addons.length ? addons : null });
+    if (error) return { error: errorKey(error.message) };
+    const r = data as { made: number; skipped: string[] };
+    redirect(`/b/${slug}/calendar?d=${date}&saved=series&n=${r.made}&s=${r.skipped.length}`);
+  }
   const { error } = await sb.rpc("book_appointment", { p_business: business, p_offering: str(f, "offering"), p_person: str(f, "person"), p_starts_at: startsAt, p_force: force,
     p_addons: f.getAll("addon").map(String).filter(Boolean).length ? f.getAll("addon").map(String).filter(Boolean) : null });
   if (error) return { error: errorKey(error.message) };
@@ -103,5 +113,11 @@ export async function stopSeries(_p: FormState, f: FormData): Promise<FormState>
   const sb = await serverSupabase();
   const { error } = await sb.rpc("stop_class_series", { p_recurrence: str(f, "recurrence"), p_reason: str(f, "reason") || null });
   if (error) return { error: errorKey(error.message) };
+  redirect(`/b/${str(f, "slug")}/calendar?d=${str(f, "date")}`);
+}
+
+export async function cancelSeries(f: FormData) {
+  const sb = await serverSupabase();
+  await sb.rpc("cancel_appointment_series", { p_series: str(f, "series") });
   redirect(`/b/${str(f, "slug")}/calendar?d=${str(f, "date")}`);
 }

@@ -7,20 +7,20 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { Icon } from "@/components/Icon";
 
 const t = translator("he");
-const KNOWN = ["hours", "site", "forms", "business"] as const;
+const KNOWN = ["hours", "site", "forms", "business", "series"] as const;
 
 /** A short "saved" note after an edit screen closes itself. Reads ?saved= once, then removes it from the address. */
 export function SavedToast({ slug }: { slug: string }) {
   const params = useSearchParams();
   const path = usePathname();
-  const [note, setNote] = useState<{ what: (typeof KNOWN)[number]; n: string | null } | null>(null);
+  const [note, setNote] = useState<{ what: (typeof KNOWN)[number]; n: string | null; s: string | null } | null>(null);
 
   useEffect(() => {
     const what = KNOWN.find((k) => k === params.get("saved"));
     if (!what) return;
-    setNote({ what, n: params.get("n") });
+    setNote({ what, n: params.get("n"), s: params.get("s") });
     // Drop the note from the address without reloading the page.
-    const rest = new URLSearchParams(params); rest.delete("saved"); rest.delete("n");
+    const rest = new URLSearchParams(params); rest.delete("saved"); rest.delete("n"); rest.delete("s");
     window.history.replaceState(null, "", rest.size ? `${path}?${rest}` : path);
   }, [params, path]);
 
@@ -31,7 +31,8 @@ export function SavedToast({ slug }: { slug: string }) {
   }, [note]);
 
   if (!note) return null;
-  const detail = note.what === "hours" && note.n !== null ? (note.n === "0" ? t("hours.allclosed") : t("hours.summary").replace("{n}", note.n)) : null;
+  const detail = note.what === "hours" && note.n !== null ? (note.n === "0" ? t("hours.allclosed") : t("hours.summary").replace("{n}", note.n))
+    : note.what === "series" ? t("series.summary").replace("{n}", note.n ?? "0") + (note.s && note.s !== "0" ? ` · ${t("series.skipped").replace("{n}", note.s)}` : "") : null;
   return (
     <div className="toast" role="status" aria-live="polite">
       <Icon n="check" size={18} />

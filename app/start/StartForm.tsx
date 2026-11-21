@@ -59,6 +59,7 @@ export function StartForm() {
         )}
         {state?.error && <p className="error" role="alert">{t(state.error)}</p>}
         <button className="btn btn-primary" disabled={pending}>{pending ? t("start.submitting") : t("start.submit")}<Icon n="chev" /></button>
+        <p className="muted small" style={{ margin: 0, textAlign: "center" }}>{t("start.terms")} <a href="/terms" target="_blank">{t("legal.terms")}</a></p>
       </form>
     </main>
   );

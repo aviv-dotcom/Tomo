@@ -23,6 +23,7 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
   const [slots, setSlots] = useState<string[] | null>(null);
   const [slot, setSlot] = useState("");
   const [other, setOther] = useState(false);
+  const [repeat, setRepeat] = useState(false);
   const [loading, startLoading] = useTransition();
   const strip = Array.from({ length: 28 }, (_, i) => addDays(today, i));
   const [picker, setPicker] = useState(!strip.includes(initialDate));
@@ -81,6 +82,14 @@ export function NewAppointment({ biz, slug, date: initialDate, today, hasHours, 
                   {slots.map((s) => <button type="button" key={s} className={`slot ${slot === s ? "slot-on" : ""}`} aria-pressed={slot === s} onClick={() => setSlot(s)}>{fmtTime(s, biz.timezone)}</button>)}
                 </div>)}
             </div>)}
+          {!other && (
+            <div className="row" style={{ flexWrap: "wrap" }}>
+              <label className="check"><input type="checkbox" name="repeat" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} /> {t("appt.repeat")}</label>
+              {repeat && <select className="input" name="weeks" defaultValue="8" aria-label={t("appt.weeks")} style={{ minHeight: 38, width: "auto" }}>
+                {[4, 6, 8, 10, 12, 16, 20, 26].map((w) => <option key={w} value={w}>{t("appt.weeks.n").replace("{n}", String(w))}</option>)}
+              </select>}
+            </div>
+          )}
           <label className="check"><input type="checkbox" name="other" checked={other} onChange={(e) => setOther(e.target.checked)} /> {t("appt.other")}</label>
           {other && <label className="field"><span className="label">{t("appt.time")}</span><TimeSelect name="time" defaultValue="10:00" from={6 * 60} to={23 * 60} step={5} label={t("appt.time")} /></label>}
           {state?.error && <p className="error" role="alert">{t(state.error as MessageKey)}</p>}

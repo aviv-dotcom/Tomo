@@ -10,6 +10,7 @@ import { bookingAction } from "../../actions";
 import { AddToSession } from "./AddToSession";
 import { CancelSession } from "./CancelSession";
 import { StopSeries } from "./StopSeries";
+import { CancelSeries } from "./CancelSeries";
 import { Avatar, Back, Empty, Icon, Title, type IconName } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,8 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
   const series = (rec as { recurrence_id: string | null; recurrences: { active: boolean } | null } | null);
   const { data: people } = isClass ? await sb.rpc("list_people", { p_business: biz.id }) : { data: [] };
   const taken = new Set(s.bookings.map((b) => b.person_id));
+  const { data: seriesRow } = s.capacity === 1 && s.bookings[0] ? await sb.from("bookings").select("series_id").eq("id", s.bookings[0].id).maybeSingle() : { data: null };
+  const apptSeries = (seriesRow as { series_id: string | null } | null)?.series_id ?? null;
   const { data: addonRows } = s.bookings.length ? await sb.from("booking_addons").select("booking_id, name, price_agorot").in("booking_id", s.bookings.map((b) => b.id)) : { data: [] };
   const addonsOf = (id: string) => ((addonRows ?? []) as { booking_id: string; name: string; price_agorot: number }[]).filter((a) => a.booking_id === id);
   const candidates = ((people ?? []) as { id: string; name: string; status: string }[]).filter((p) => !taken.has(p.id) && p.status !== "left");
@@ -69,6 +72,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
         {s.status === "scheduled" && new Date(s.starts_at) > new Date() && (
           <CancelSession session={s.id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}
+        {apptSeries && s.status === "scheduled" && <CancelSeries series={apptSeries} slug={slug} date={localDate(tz, new Date(s.starts_at))} />}
         {series?.recurrence_id && series.recurrences?.active && (
           <StopSeries recurrence={series.recurrence_id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}

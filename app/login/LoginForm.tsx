@@ -7,7 +7,7 @@ import { Icon, IconTile } from "@/components/Icon";
 
 const t = translator("he");
 
-export function LoginForm({ failed }: { failed: boolean }) {
+export function LoginForm({ failed, next }: { failed: boolean; next?: string }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -16,6 +16,8 @@ export function LoginForm({ failed }: { failed: boolean }) {
   async function send(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setError(null);
+    // Where to land after the email link (e.g. an invitation). Kept in a short-lived cookie on this device.
+    if (next && /^\/join\/[0-9a-f-]{36}$/i.test(next)) document.cookie = `tomo_next=${encodeURIComponent(next)}; path=/; max-age=3600; samesite=lax`;
     const { error } = await supabase().auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },

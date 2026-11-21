@@ -11,7 +11,7 @@ const t = translator("he");
 export default async function ServicesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { sb, biz } = await requireBusiness(slug);
-  const { data } = await sb.from("offerings").select("id, name, delivery, billing, minutes, price_agorot, deposit_agorot, buffer_minutes, active")
+  const { data } = await sb.from("offerings").select("id, name, delivery, billing, minutes, price_agorot, deposit_agorot, buffer_minutes, active, pack_entries, valid_days")
     .eq("business_id", biz.id).order("active", { ascending: false }).order("position");
   const offerings = (data ?? []) as Offering[];
   return (

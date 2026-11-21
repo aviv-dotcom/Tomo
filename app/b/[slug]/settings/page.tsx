@@ -49,6 +49,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ slug:
           <Title n="chat" style={{ marginBottom: 4 }}>{t("set.clients")}</Title>
           {row("zap", "automations", "auto.title", "set.auto.hint")}
           {row("clipboard", "forms", "forms.title", "set.forms.hint", onOff(!!form?.enabled))}
+          {row("users", "team", "team.title", "team.row.hint")}
           <div className="list-row"><IconTile n="card" tone="plain" /><span className="grow"><span>{t("set.pay")}</span></span><span className="tag">{t("today.soon")}</span></div>
         </section>
         <section className="card">

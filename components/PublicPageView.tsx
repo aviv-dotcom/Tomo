@@ -52,6 +52,7 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
               <span className="muted small">{shekels(o.priceAgorot)} {t(`billing.${o.billing}` as MessageKey)}{o.minutes ? ` · ${o.minutes} ${t("minutes")}` : ""}</span></span>
             {o.delivery === "appointment" && <Link className="btn btn-primary btn-small" href={`/p/${p.slug}/book?o=${o.id}`}><Icon n="calendarPlus" />{t("pub.book")}</Link>}
             {o.delivery === "class" && classIds.has(o.id) && <a className="btn btn-secondary btn-small" href="#classes">{t("pub.join")}</a>}
+            {o.delivery === "product" && <Link className="btn btn-secondary btn-small" href={`/p/${p.slug}/order?o=${o.id}`}><Icon n="plus" />{t("order.cta")}</Link>}
           </div>
         ))}
       </section>
@@ -132,7 +133,9 @@ export function PublicPageView({ p: raw, preview = false }: { p: PageData; previ
         )}
       </header>
       {sections.map((s) => block[s])}
-      <p className="muted small" style={{ textAlign: "center" }}>{t("pub.powered")}</p>
+      <p className="muted small legal-links">
+        <Link href={`/p/${p.slug}/accessibility`}>{t("legal.accessibility")}</Link> · <Link href={`/p/${p.slug}/privacy`}>{t("legal.privacy")}</Link> · {t("pub.powered")}
+      </p>
     </div>
   );
 }

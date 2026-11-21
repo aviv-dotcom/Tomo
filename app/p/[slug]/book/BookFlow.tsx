@@ -46,6 +46,10 @@ export function BookFlow({ slug, name, timezone, today, startDay, waitlist, acce
         <h1 className="h1">{t("wait.done.title")}</h1>
         <div className="card"><b>{wState.done.offering}</b><span className="meta"><Icon n="calendar" size={15} />{when}</span><span className="muted">{name}</span></div>
         <p className="sub">{t("wait.done.body")}</p>
+        {(wState.done.token || wState.done.booking_token) && (
+          <Link className="btn btn-secondary" href={wState.done.token ? `/w/${wState.done.token}` : `/m/${wState.done.booking_token}`}><Icon n="link" />{t("wl.manage")}</Link>
+        )}
+        <p className="muted small" style={{ margin: 0 }}>{t("wl.manage.hint")}</p>
         <Link className="btn btn-secondary" href={`/p/${slug}`}>{t("pubbook.done.back")}</Link>
       </main>
     );
