@@ -16,7 +16,7 @@ const amatic = Amatic_SC({ subsets: ["latin", "hebrew"], weight: ["400", "700"],
 export type FontKey = "rubik" | "heebo" | "assistant" | "varela" | "fredoka" | "playpen" | "frank" | "david" | "secular" | "suez" | "amatic";
 
 /** Every font, in the order shown to the owner. `display` fonts are for headings only. */
-export const PAGE_FONTS: { key: FontKey; name: string; family: string; display?: boolean }[] = [
+export const PAGE_FONTS: { key: FontKey; name: string; family: string; display?: boolean; headScale?: number }[] = [
   { key: "rubik", name: "Rubik", family: "var(--pf-rubik)" },
   { key: "heebo", name: "Heebo", family: "var(--pf-heebo)" },
   { key: "assistant", name: "Assistant", family: "var(--pf-assistant)" },
@@ -27,7 +27,7 @@ export const PAGE_FONTS: { key: FontKey; name: string; family: string; display?:
   { key: "david", name: "David Libre", family: "var(--pf-david)" },
   { key: "secular", name: "Secular One", family: "var(--pf-secular)", display: true },
   { key: "suez", name: "Suez One", family: "var(--pf-suez)", display: true },
-  { key: "amatic", name: "Amatic", family: "var(--pf-amatic)", display: true },
+  { key: "amatic", name: "Amatic", family: "var(--pf-amatic)", display: true, headScale: 1.4 },
 ];
 
 /** The CSS variables for all page fonts; put on a wrapper so its children can use any of them. */
@@ -40,5 +40,7 @@ export function pageStyle(p: { accent?: string | null; font_heading?: string | n
   return {
     ...(p.accent ? { "--accent": p.accent, "--accent-soft": `color-mix(in srgb, ${p.accent} 13%, var(--surface))` } : {}),
     "--pub-head": fontFamily(p.font_heading), "--pub-body": fontFamily(p.font_body), "--pub-zoom": String(TEXT_ZOOM[p.text_size ?? "m"] ?? 1),
+    // Narrow fonts (handwritten) read small; their headings are set larger.
+    "--pub-head-scale": String(PAGE_FONTS.find((f) => f.key === p.font_heading)?.headScale ?? 1),
   } as React.CSSProperties;
 }

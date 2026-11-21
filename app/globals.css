@@ -286,6 +286,9 @@ img.pub-logo { background: var(--surface); }
 /* Business page lettering: chosen fonts and text size */
 .pub-font { font-family: var(--pub-body, inherit), var(--font-body), system-ui, sans-serif; zoom: var(--pub-zoom, 1); }
 .pub-font :is(.h1, .card-title, h2, .title-in, .pub-logo.hero-mark) { font-family: var(--pub-head, inherit), var(--font-body), system-ui, sans-serif; }
+.pub-font :is(.h1, h2.card-title) { font-size: calc(var(--h-size, 16px) * var(--pub-head-scale, 1)); }
+.pub-font .h1 { --h-size: 26px; }
+.pub-font h2.card-title { --h-size: 16px; }
 .pub-font .input, .pub-font .btn, .pub-font button, .pub-font select { font-family: inherit; }
 .font-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
 .font-opt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; color: var(--ink); }
