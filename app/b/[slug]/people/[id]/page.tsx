@@ -7,8 +7,10 @@ import { fmtDate, fmtTime } from "@/lib/time";
 import { OwnerNav } from "@/components/OwnerNav";
 import { PersonForm } from "./PersonForm";
 import { NotesForm, SellPass } from "./PassForms";
-import { cancelPass, removePhoto } from "./actions";
-import { AlertEditor, PhotoUploader } from "@/components/VisitForms";
+import { cancelPass } from "./actions";
+import { AlertEditor, VisitCard } from "@/components/VisitForms";
+import { visitPhotos } from "@/lib/visit-photos";
+import { siteBase } from "@/lib/site";
 import { ForgetButton } from "./ForgetButton";
 import { ChargeForm, PaymentForm } from "./MoneyForms";
 import { voidCharge } from "../../money/actions";
@@ -20,7 +22,7 @@ const t = translator("he");
 
 type Card = { id: string; name: string; phone: string | null; email: string | null; status: string; marketing_consent: boolean; notes: string | null; alert: string | null;
   messages: { kind: string; at: string }[]; waiting: { id: string; date: string; part: string; offering: string }[];
-  visits: number; no_shows: number; bookings: { id: string; session_id: string; starts_at: string; offering: string; status: string; summary: string | null }[] };
+  visits: number; no_shows: number; bookings: { id: string; session_id: string; starts_at: string; offering: string; status: string; summary: string | null; shared: boolean; token: string | null }[] };
 
 export default async function PersonPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -35,11 +37,10 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
   ]);
   const passes = (passData ?? []) as { id: string; name: string; kind: string; entries: number | null; left: number | null; used: number; expires_on: string | null; status: string; expired: boolean }[];
   const isOwner = role === "owner";
-  // Before / after photos: private files, shown through links that expire in 10 minutes.
-  const { data: photoRows } = await sb.from("person_photos").select("id, path, kind, booking_id, created_at").eq("person_id", id).order("created_at", { ascending: false }).limit(60);
-  const photoList = (photoRows ?? []) as { id: string; path: string; kind: string; booking_id: string | null; created_at: string }[];
-  const { data: signed } = photoList.length ? await sb.storage.from("client-media").createSignedUrls(photoList.map((x) => x.path), 600) : { data: [] };
-  const photoUrl = new Map((signed ?? []).map((x) => [x.path, x.signedUrl]));
+  const photosOf = await visitPhotos(sb, p.bookings.map((b) => b.id));
+  const now = Date.now();
+  const visitDone = (b: Card["bookings"][number]) => b.status === "attended" || (b.status === "booked" && Date.parse(b.starts_at) <= now + 36e5);
+  const firstDone = p.bookings.find(visitDone)?.id;
   const form = formData as { questions: string[]; answers: boolean[]; details: string | null; signed_at: string } | null;
   const money = (moneyData ?? { balance: 0, lines: [] }) as { balance: number;
     lines: { type: "charge" | "payment"; id: string; text: string; method?: string; amount: number; void: boolean; at: string }[] };
@@ -62,32 +63,25 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
         </div>
 <div className="cols">
         <section className="card" style={{ gap: 0 }}>
-          <Title n="calendar" style={{ marginBottom: 6 }}>{t("card.history")}</Title>
+          <Title n="calendar" style={{ marginBottom: 6 }}>{t("visit.cards")}</Title>
           {p.bookings.length === 0 && <Empty n="calendar" text={t("card.history.empty")} />}
-          {p.bookings.map((b) => (
-            <Link key={b.id} href={`/b/${slug}/calendar/s/${b.session_id}`} className="list-row link-row">
-              <span className="grow"><span>{b.offering}</span><span className="muted small">{fmtDate(b.starts_at, biz.timezone)} · {fmtTime(b.starts_at, biz.timezone)}</span>
-                {b.summary && <span className="summary-line">{b.summary}</span>}</span>
-              <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span>
-            </Link>
-          ))}
-        </section>
-        <section className="card">
-          <Title n="image" extra={<span className="muted small">{photoList.length}</span>}>{t("photo.title")}</Title>
-          <p className="muted small row" style={{ margin: 0 }}><Icon n="shield" size={14} />{t("photo.private")}</p>
-          {photoList.length === 0 ? <p className="muted small" style={{ margin: 0 }}>{t("photo.empty")}</p> : (
-            <div className="photos">
-              {photoList.map((f) => (
-                <div key={f.id} className="photo">
-                  {photoUrl.get(f.path) && <a href={photoUrl.get(f.path)!} target="_blank" rel="noopener noreferrer"><img src={photoUrl.get(f.path)!} alt={t(`photo.${f.kind}` as MessageKey)} loading="lazy" /></a>}
-                  <span className="photo-tag">{t(`photo.${f.kind}` as MessageKey)} · {fmtDate(f.created_at, biz.timezone)}</span>
-                  <form action={removePhoto}><input type="hidden" name="photo" value={f.id} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="person" value={p.id} />
-                    <button className="photo-x" aria-label={t("photo.remove")} title={t("photo.remove")}><Icon n="x" size={14} /></button></form>
-                </div>
-              ))}
-            </div>
-          )}
-          <PhotoUploader business={biz.id} slug={slug} person={p.id} booking={p.bookings.find((b) => b.status === "attended" || b.status === "booked")?.id} />
+          {p.bookings.map((b) => {
+            const when = <span className="grow"><span>{b.offering}</span><span className="muted small">{fmtDate(b.starts_at, biz.timezone)} · {fmtTime(b.starts_at, biz.timezone)}</span></span>;
+            if (!visitDone(b)) return (
+              <Link key={b.id} href={`/b/${slug}/calendar/s/${b.session_id}`} className="list-row link-row">{when}<span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span></Link>
+            );
+            const photos = photosOf(b.id);
+            return (
+              <details key={b.id} className="visit-fold visit-row" open={b.id === firstDone}>
+                <summary className="list-row">{when}
+                  <span className="visit-icons small">{b.summary && <Icon n="clipboard" size={14} />}{photos.length > 0 && <><Icon n="image" size={14} />{photos.length}</>}{b.shared && <span className="tag tag-good">{t("visit.shared")}</span>}</span>
+                  <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span><Icon n="down" size={16} /></summary>
+                <VisitCard business={biz.id} slug={slug} person={p.id} booking={b.id} note={b.summary} shared={b.shared} token={b.token}
+                  photos={photos} phone={p.phone} clientName={p.name} businessName={biz.name} base={siteBase()} />
+                <Link className="link-btn small" style={{ padding: "6px 0" }} href={`/b/${slug}/calendar/s/${b.session_id}`}>{t("visit.open_session")}</Link>
+              </details>
+            );
+          })}
         </section>
         <section className="card" id="money">
           <Title n="money" extra={            <span className={`tag ${money.balance > 0 ? "tag-warn" : "tag-good"}`}>{money.balance > 0 ? `${t("money.balance")} ${shekels(money.balance)}` : money.balance < 0 ? `${t("money.credit")} ${shekels(-money.balance)}` : t("money.clear")}</span>}>{t("money.section")}</Title>

@@ -107,5 +107,5 @@ reset role;
 select pg_temp.check((select coalesce(string_agg(p.proname, ', '), '') from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
     and p.proname not in ('public_page', 'public_slots', 'public_book', 'public_waitlist', 'public_calendar_feed', 'public_waitlist_info', 'public_leave_waitlist', 'public_order', 'invite_info', 'public_booking', 'public_cancel', 'public_alternatives', 'public_move',
-                          'public_form', 'public_submit_form', 'public_export', 'public_request_deletion', 'core_health', 'phone_digits_of')) = '',
+                          'public_form', 'public_submit_form', 'public_export', 'public_request_deletion', 'public_visit', 'public_visit_photo', 'core_health', 'phone_digits_of')) = '',
   'visitors can call only the public functions');

@@ -88,3 +88,12 @@ export async function removePhoto(f: FormData) {
   if (path) await sb.storage.from("client-media").remove([path as string]);
   revalidatePath(`/b/${String(f.get("slug") ?? "")}/people/${String(f.get("person") ?? "")}`);
 }
+
+/** Shares a visit card with the client (or stops). Returns the private link token while shared. */
+export async function shareVisit(f: FormData): Promise<{ error?: MessageKey; token?: string }> {
+  const sb = await serverSupabase();
+  const { data, error } = await sb.rpc("set_visit_shared", { p_booking: String(f.get("booking") ?? ""), p_shared: f.get("shared") === "1" });
+  if (error) return { error: errorKey(error.message) };
+  revalidatePath(`/b/${String(f.get("slug") ?? "")}/people/${String(f.get("person") ?? "")}`);
+  return { token: (data as string | null) ?? undefined };
+}
