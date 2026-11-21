@@ -56,6 +56,8 @@ select pg_temp.check(public_page('barbers-p')::text not like '%user_id%', 'no ac
 select pg_temp.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 select save_page_design((select v::uuid from ctx where k = 'b'), null, null, null, null, null, '["services","team","hours"]');
 select pg_temp.check((select sections from business_pages where business_id = (select v::uuid from ctx where k = 'b')) ? 'team', 'team section can be placed');
+select save_page_design((select v::uuid from ctx where k = 'b'), null, null, null, null, null, '["services","team","classes","gallery","about","hours","contact"]');
+select pg_temp.check(jsonb_array_length((select sections from business_pages where business_id = (select v::uuid from ctx where k = 'b'))) = 7, 'all seven sections fit');
 
 -- Removing returns the old file to delete
 select pg_temp.check(set_provider_photo((select v::uuid from ctx where k = 'avi'), null) = (select v from ctx where k = 'path'), 'removing returns the old file');

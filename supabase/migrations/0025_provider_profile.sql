@@ -40,6 +40,9 @@ begin
 end $$;
 
 -- ── The business page: a "team" section, on by default after the services ─────
+alter table business_pages drop constraint business_pages_sections_check;
+alter table business_pages add constraint business_pages_sections_check check (jsonb_typeof(sections) = 'array' and jsonb_array_length(sections) <= 7);
+alter table business_pages alter column sections set default '["services","team","classes","gallery","about","hours","contact"]'::jsonb;
 update business_pages set sections = (
   select jsonb_agg(x order by o) from (
     select x, o * 2 as o from jsonb_array_elements(sections) with ordinality t(x, o)
