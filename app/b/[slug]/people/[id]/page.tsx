@@ -39,7 +39,9 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
   const isOwner = role === "owner";
   const photosOf = await visitPhotos(sb, p.bookings.map((b) => b.id));
   const now = Date.now();
-  const visitDone = (b: Card["bookings"][number]) => b.status === "attended" || (b.status === "booked" && Date.parse(b.starts_at) <= now + 36e5);
+  // A visit gets its summary card once it's (nearly) happening, or as soon as anything was written or photographed for it.
+  const visitDone = (b: Card["bookings"][number]) => b.status === "attended" || !!b.summary || b.shared || photosOf(b.id).length > 0
+    || (b.status === "booked" && Date.parse(b.starts_at) <= now + 36e5);
   const firstDone = p.bookings.find(visitDone)?.id;
   const form = formData as { questions: string[]; answers: boolean[]; details: string | null; signed_at: string } | null;
   const money = (moneyData ?? { balance: 0, lines: [] }) as { balance: number;
