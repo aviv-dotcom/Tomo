@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverSupabase } from "@/lib/supabase/server";
+import { forgetWithPhotos } from "@/lib/forget";
 
 export async function resolveAction(id: string, status: "sent" | "dismissed", slug: string): Promise<void> {
   const sb = await serverSupabase();
@@ -17,7 +18,7 @@ export async function toggleAutomation(business: string, key: string, enabled: b
 /** Confirms a client's request to be forgotten: removes their details, then closes the request. */
 export async function forgetFromRequest(actionId: string, personId: string, slug: string): Promise<void> {
   const sb = await serverSupabase();
-  const { error } = await sb.rpc("forget_person", { p_person: personId });
+  const { error } = await forgetWithPhotos(sb, personId);
   if (!error) await sb.rpc("resolve_action", { p_action: actionId, p_status: "sent" }).then(() => null, () => null);
   revalidatePath(`/b/${slug}`); revalidatePath(`/b/${slug}/inbox`); revalidatePath(`/b/${slug}/people`);
 }

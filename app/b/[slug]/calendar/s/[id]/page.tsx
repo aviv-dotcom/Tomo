@@ -10,6 +10,7 @@ import { bookingAction } from "../../actions";
 import { AddToSession } from "./AddToSession";
 import { CancelSession } from "./CancelSession";
 import { StopSeries } from "./StopSeries";
+import { PhotoUploader, VisitNoteForm } from "@/components/VisitForms";
 import { CancelSeries } from "./CancelSeries";
 import { Avatar, Back, Empty, Icon, Title, type IconName } from "@/components/Icon";
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 const t = translator("he");
 
 type Detail = { id: string; starts_at: string; ends_at: string; capacity: number; location: string | null; status: string; provider: { name: string; color: string } | null;
-  offering: { id: string; name: string; delivery: string }; bookings: { id: string; person_id: string; name: string; status: string }[] };
+  offering: { id: string; name: string; delivery: string }; bookings: { id: string; person_id: string; name: string; status: string; alert: string | null; summary: string | null }[] };
 
 export default async function SessionPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -57,12 +58,20 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
             <div key={b.id} className="list-row" style={{ flexWrap: "wrap" }}>
               <Avatar name={b.name} size={32} /><Link href={`/b/${slug}/people/${b.person_id}`} className="grow" style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{b.name}</Link>
               <span className="tag">{t(`bstatus.${b.status}` as MessageKey)}</span>
+              {b.alert && <span className="alert-banner" style={{ cursor: "default" }}><Icon n="alert" size={16} /><span className="grow">{b.alert}</span></span>}
               {addonsOf(b.id).length > 0 && <span className="muted small row" style={{ width: "100%", gap: 6 }}><Icon n="plus" size={14} />{t("session.addons")}: {addonsOf(b.id).map((a) => `${a.name} (${shekels(a.price_agorot)})`).join(", ")}</span>}
               <div className="row" style={{ width: "100%", gap: 6 }}>
                 {b.status === "booked" && <>{op(b, "attended", t("session.attended"), "check", true)}{op(b, "no_show", t("session.noshow"), "ban")}</>}
                 {(b.status === "attended" || b.status === "no_show") && op(b, "booked", t("session.undo"), "undo")}
                 {(b.status === "booked" || b.status === "waitlist") && op(b, "cancel", t("session.cancel"), "x")}
               </div>
+              {(b.status === "booked" || b.status === "attended") && (
+                <details className="visit-fold" open={!!b.summary}>
+                  <summary className="small">{b.summary ? t("visit.title") : `+ ${t("visit.title")} · ${t("photo.title")}`}</summary>
+                  <VisitNoteForm booking={b.id} note={b.summary} />
+                  <PhotoUploader business={biz.id} slug={slug} person={b.person_id} booking={b.id} />
+                </details>
+              )}
             </div>
           ))}
         </section>
