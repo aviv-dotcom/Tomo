@@ -21,7 +21,7 @@ type Detail = { id: string; starts_at: string; ends_at: string; capacity: number
 
 export default async function SessionPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
   const { data, error } = await sb.rpc("session_detail", { p_session: id });
   if (error || !data) notFound();
   const s = data as Detail;
@@ -73,7 +73,7 @@ export default async function SessionPage({ params }: { params: Promise<{ slug: 
           <CancelSession session={s.id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}
         {apptSeries && s.status === "scheduled" && <CancelSeries series={apptSeries} slug={slug} date={localDate(tz, new Date(s.starts_at))} />}
-        {series?.recurrence_id && series.recurrences?.active && (
+        {isOwner && series?.recurrence_id && series.recurrences?.active && (
           <StopSeries recurrence={series.recurrence_id} slug={slug} date={localDate(tz, new Date(s.starts_at))} />
         )}
       </main>

@@ -8,7 +8,7 @@ import { Icon } from "@/components/Icon";
 const t = translator("he");
 const METHODS = ["cash", "bit", "transfer", "card", "other", "refund"] as const;
 
-export function PaymentForm({ business, slug, person, suggested }: { business: string; slug: string; person: string; suggested: number }) {
+export function PaymentForm({ business, slug, person, suggested, canRefund = true }: { business: string; slug: string; person: string; suggested: number; canRefund?: boolean }) {
   const [state, action, pending] = useActionState<MoneyState, FormData>(recordPayment, null);
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => { if (state?.ok) form.current?.reset(); }, [state?.ok]);
@@ -18,7 +18,7 @@ export function PaymentForm({ business, slug, person, suggested }: { business: s
       <input type="hidden" name="business" value={business} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="person" value={person} />
       <div className="kpis">
         <input className="input input-ltr" name="amount" inputMode="decimal" required placeholder={t("money.amount")} aria-label={t("money.amount")} defaultValue={suggested > 0 ? suggested / 100 : ""} />
-        <select className="input" name="method" aria-label={t("money.method")}>{METHODS.map((m) => <option key={m} value={m}>{t(`method.${m}` as MessageKey)}</option>)}</select>
+        <select className="input" name="method" aria-label={t("money.method")}>{METHODS.filter((m) => canRefund || m !== "refund").map((m) => <option key={m} value={m}>{t(`method.${m}` as MessageKey)}</option>)}</select>
       </div>
       <input className="input" name="note" maxLength={120} placeholder={t("money.note")} aria-label={t("money.note")} />
       {state?.error && <p className="error" role="alert">{t(state.error)}</p>}

@@ -23,7 +23,7 @@ type Card = { id: string; name: string; phone: string | null; email: string | nu
 
 export default async function PersonPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner: owner } = await requireBusiness(slug);
   const { data, error } = await sb.rpc("person_card", { p_person: id });
   if (error || !data) notFound();
   const p = data as Card;
@@ -68,7 +68,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
           <Title n="money" extra={            <span className={`tag ${money.balance > 0 ? "tag-warn" : "tag-good"}`}>{money.balance > 0 ? `${t("money.balance")} ${shekels(money.balance)}` : money.balance < 0 ? `${t("money.credit")} ${shekels(-money.balance)}` : t("money.clear")}</span>}>{t("money.section")}</Title>
           <div className="row" style={{ alignItems: "start", flexWrap: "wrap" }}>
             <details className="fold" open={money.balance > 0}><summary className="btn btn-secondary btn-small"><Icon n="money" />{t("money.pay.title")}</summary>
-              <PaymentForm business={biz.id} slug={slug} person={p.id} suggested={money.balance} /></details>
+              <PaymentForm business={biz.id} slug={slug} person={p.id} suggested={money.balance} canRefund={owner} /></details>
             <details className="fold"><summary className="btn btn-secondary btn-small"><Icon n="receipt" />{t("money.charge.title")}</summary>
               <ChargeForm business={biz.id} slug={slug} person={p.id} /></details>
           </div>
@@ -80,7 +80,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
                 <span className="grow"><span>{l.type === "payment" ? `${t(`method.${l.method}` as MessageKey)}${l.text !== l.method ? ` · ${l.text}` : ""}` : l.text}</span>
                   <span className="muted small">{fmtDate(l.at, biz.timezone)}{l.void ? ` · ${t("money.voided")}` : ""}</span></span>
                 <span className="price" style={{ color: l.type === "payment" ? "var(--good)" : undefined }}>{l.type === "payment" ? "+" : ""}{shekels(Math.abs(l.amount))}</span>
-                {l.type === "charge" && !l.void && (
+                {owner && l.type === "charge" && !l.void && (
                   <form action={voidCharge}><input type="hidden" name="charge" value={l.id} /><input type="hidden" name="slug" value={slug} /><input type="hidden" name="person" value={p.id} />
                     <button className="link-btn" aria-label={t("money.void")} title={t("money.void")}><Icon n="x" size={16} /></button></form>
                 )}
@@ -136,7 +136,7 @@ export default async function PersonPage({ params }: { params: Promise<{ slug: s
           <Title n="shield">{t("card.privacy")}</Title>
           <div className="row btn-row">
             <a className="btn btn-secondary btn-small" href={`/b/${slug}/people/${p.id}/export`}><Icon n="download" />{t("card.export")}</a>
-            <ForgetButton id={p.id} slug={slug} />
+            {owner && <ForgetButton id={p.id} slug={slug} />}
           </div>
         </section>
 </div>

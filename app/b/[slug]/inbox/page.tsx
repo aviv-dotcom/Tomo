@@ -11,7 +11,7 @@ const t = translator("he");
 
 export default async function InboxPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
   const items = await loadInbox(sb, biz, 200);
   return (
     <>
@@ -20,7 +20,7 @@ export default async function InboxPage({ params }: { params: Promise<{ slug: st
         <h1 className="h1">{t("act.title")}</h1>
         {items.length === 0 && <div className="card"><Empty n="check" text={t("act.empty")} /></div>}
         {items.map((i) => <ActionCard key={i.action.id} action={i.action} text={i.text} slug={slug} />)}
-        <Link className="small muted meta" href={`/b/${slug}/automations`}><Icon n="zap" size={14} />{t("act.settings")}</Link>
+        {isOwner && <Link className="small muted meta" href={`/b/${slug}/automations`}><Icon n="zap" size={14} />{t("act.settings")}</Link>}
       </main>
       <OwnerNav slug={slug} active="today" />
     </>

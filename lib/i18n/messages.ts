@@ -739,6 +739,12 @@ export const he = {
   "msg.pass.until": ", בתוקף עד {date}",
   "exp.note": "הערה",
   "cal.week": "השבוע",
+  "owner_only.title": "רק בעל/ת העסק יכול/ה לשנות את זה",
+  "owner_only.body": "כמנהל/ת אפשר לנהל את הלוח, הלקוחות, ההודעות והכסף. לשינוי ההגדרות האלה כדאי לפנות לבעל/ת העסק.",
+  "set.manager_note": "התפקיד שלך: {role}. את ההגדרות של העסק משנה בעל/ת העסק.",
+  "set.useful": "שימושי",
+  "team.row.view": "מי בצוות",
+  "set.reports.hint": "הכנסות, הגעות וקבצים לאקסל",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -1476,4 +1482,10 @@ export const en: Record<MessageKey, string> = {
   "msg.pass.until": ", valid until {date}",
   "exp.note": "Note",
   "cal.week": "This week",
+  "owner_only.title": "Only the owner can change this",
+  "owner_only.body": "As a manager you run the calendar, clients, messages and money. Ask the owner to change these settings.",
+  "set.manager_note": "Your role: {role}. The owner changes the business settings.",
+  "set.useful": "Useful",
+  "team.row.view": "Who's on the team",
+  "set.reports.hint": "Income, attendance and Excel files",
 };

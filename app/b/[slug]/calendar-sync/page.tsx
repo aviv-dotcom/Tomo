@@ -6,6 +6,7 @@ import { OwnerNav } from "@/components/OwnerNav";
 import { Back, Icon, IconTile, Title } from "@/components/Icon";
 import { CopyLink } from "./CopyLink";
 import { rotateCalendarLink } from "./actions";
+import { OwnerOnly } from "@/components/OwnerOnly";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -13,7 +14,8 @@ const t = translator("he");
 /** Connects the owner's own calendar app to Tomo with a private subscription link. */
 export default async function CalendarSyncPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
+  if (!isOwner) return <OwnerOnly slug={slug} title="sync.title" />;
   const { data: token, error } = await sb.rpc("calendar_link", { p_business: biz.id });
   const h = await headers();
   const base = siteBase() || `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;

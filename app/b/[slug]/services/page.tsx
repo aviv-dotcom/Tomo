@@ -4,13 +4,15 @@ import { translator } from "@/lib/i18n";
 import { OwnerNav } from "@/components/OwnerNav";
 import { OfferingForm, type Offering } from "./OfferingForm";
 import { Back } from "@/components/Icon";
+import { OwnerOnly } from "@/components/OwnerOnly";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
 
 export default async function ServicesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
+  if (!isOwner) return <OwnerOnly slug={slug} title="svc.title" />;
   const { data } = await sb.from("offerings").select("id, name, delivery, billing, minutes, price_agorot, deposit_agorot, buffer_minutes, active, pack_entries, valid_days")
     .eq("business_id", biz.id).order("active", { ascending: false }).order("position");
   const offerings = (data ?? []) as Offering[];

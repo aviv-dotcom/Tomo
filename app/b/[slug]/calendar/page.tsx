@@ -16,7 +16,7 @@ type Item = { id: string; starts_at: string; ends_at: string; capacity: number; 
 export default async function CalendarPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ d?: string }> }) {
   const { slug } = await params;
   const { d } = await searchParams;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
   const today = localDate(biz.timezone);
   const day = isDate(d) ? d : today;
   const start = addDays(day, -weekday(day));
@@ -50,7 +50,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
         </div>
         <div className="row">
           <Link className="btn btn-primary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/new?d=${day}`}><Icon n="calendarPlus" />{t("cal.new_appt")}</Link>
-          <Link className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/class`}><Icon n="repeat" />{t("cal.new_class")}</Link>
+          {isOwner && <Link className="btn btn-secondary btn-small" style={{ flex: 1 }} href={`/b/${slug}/calendar/class`}><Icon n="repeat" />{t("cal.new_class")}</Link>}
         </div>
         <div className="week" aria-label={t("cal.week")}>
           {week.map((w, i) => (

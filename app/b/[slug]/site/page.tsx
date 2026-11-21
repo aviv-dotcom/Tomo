@@ -5,6 +5,7 @@ import { OwnerNav } from "@/components/OwnerNav";
 import { Back } from "@/components/Icon";
 import type { PageData } from "@/components/PublicPageView";
 import { SiteEditor } from "./SiteEditor";
+import { OwnerOnly } from "@/components/OwnerOnly";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -12,7 +13,8 @@ const t = translator("he");
 export default async function SitePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ back?: string }> }) {
   const { slug } = await params;
   const ret = backTarget(slug, (await searchParams).back);
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
+  if (!isOwner) return <OwnerOnly slug={slug} title="site.title" />;
   const [{ data: pg }, { data: offerings }, { data: hours }, { data: sessions }] = await Promise.all([
     sb.from("business_pages").select("*").eq("business_id", biz.id).maybeSingle(),
     sb.from("offerings").select("id, name, delivery, billing, minutes, price_agorot").eq("business_id", biz.id).eq("active", true)

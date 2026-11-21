@@ -30,6 +30,8 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect("/login");
   const { data: biz } = await sb.from("businesses").select("id").eq("slug", slug).maybeSingle();
+  const { data: myRole } = biz ? await sb.rpc("core_role", { p_business: biz.id }) : { data: null };
+  const isOwner = myRole === "owner";
   if (!biz) notFound();
   const { data, error } = await sb.rpc("business_today", { p_business: biz.id });
   if (error || !data) notFound();
@@ -100,7 +102,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
           {inbox.slice(0, 3).map((i) => <ActionCard key={i.action.id} action={i.action} text={i.text} slug={d.business.slug} />)}
           <div className="row" style={{ justifyContent: "space-between" }}>
             {inbox.length > 3 ? <Link className="small" href={`/b/${d.business.slug}/inbox`}>{t("act.all")} ({inbox.length})</Link> : <span />}
-            <Link className="small muted meta" href={`/b/${d.business.slug}/automations`}><Icon n="zap" size={14} />{t("act.settings")}</Link>
+            {isOwner ? <Link className="small muted meta" href={`/b/${d.business.slug}/automations`}><Icon n="zap" size={14} />{t("act.settings")}</Link> : <span />}
           </div>
         </section>
 
@@ -142,7 +144,7 @@ export default async function TodayPage({ params }: { params: Promise<{ slug: st
 
         <WaitlistCard slug={d.business.slug} timezone={d.business.timezone} entries={waiting} />
 
-        {!setupDone && (
+        {isOwner && !setupDone && (
           <section className="card" style={{ gap: 0 }}>
             <Title n="sparkles" style={{ marginBottom: 4 }} extra={<span className="muted small">{steps.filter((x) => x.done).length}/{steps.length}</span>}>{t("today.setup.title")}</Title>
             {steps.map((x) => (

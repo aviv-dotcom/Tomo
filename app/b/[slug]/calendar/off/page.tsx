@@ -6,6 +6,7 @@ import { OwnerNav } from "@/components/OwnerNav";
 import { removeTimeOff } from "../actions";
 import { TimeOffForm } from "./TimeOffForm";
 import { Back, Empty, Icon, IconTile } from "@/components/Icon";
+import { OwnerOnly } from "@/components/OwnerOnly";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
@@ -14,7 +15,8 @@ type Conflict = { id: string; starts_at: string; offering: string; people: numbe
 
 export default async function TimeOffPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
+  if (!isOwner) return <OwnerOnly slug={slug} title="off.title" />;
   const { data } = await sb.rpc("list_time_off", { p_business: biz.id });
   const offs = (data ?? []) as Off[];
   const conflicts = await Promise.all(offs.filter((o) => o.conflicts > 0).map(async (o) => {

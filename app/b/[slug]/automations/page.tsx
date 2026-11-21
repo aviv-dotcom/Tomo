@@ -4,13 +4,15 @@ import { translator } from "@/lib/i18n";
 import { OwnerNav } from "@/components/OwnerNav";
 import { Toggles } from "./Toggles";
 import { Back } from "@/components/Icon";
+import { OwnerOnly } from "@/components/OwnerOnly";
 
 export const dynamic = "force-dynamic";
 const t = translator("he");
 
 export default async function AutomationsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { sb, biz } = await requireBusiness(slug);
+  const { sb, biz, isOwner } = await requireBusiness(slug);
+  if (!isOwner) return <OwnerOnly slug={slug} title="auto.title" />;
   const { data } = await sb.rpc("list_automations", { p_business: biz.id });
   return (
     <>
